@@ -1,0 +1,19 @@
+{
+  "name": "@campus-boardgame/mini",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "echo Please run mini app in HBuilderX",
+    "build": "echo Please build mini app in HBuilderX"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-5000620260331001",
+    "@dcloudio/uni-ui": "1.5.12",
+    "pinia": "^3.0.3",
+    "vue": "3.4.28"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "3.4.28",
+    "typescript": "^5.9.3"
+  }
+}

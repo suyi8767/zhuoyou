@@ -1,0 +1,16 @@
+{
+  "name": "campus-boardgame-rental",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/server",
+    "apps/admin"
+  ],
+  "scripts": {
+    "dev:server": "npm --prefix apps/server run dev",
+    "dev:admin": "npm --prefix apps/admin run dev",
+    "dev:mini": "npm --prefix apps/mini run dev",
+    "build": "npm --prefix apps/server run build && npm --prefix apps/admin run build && npm --prefix apps/mini run build",
+    "test": "npm --prefix apps/server run test"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#eefbf7"
+      }
+    },
+    {
+      "path": "pages/games/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/game-detail/index",
+      "style": {
+        "navigationBarTitleText": "桌游详情",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/order-create/index",
+      "style": {
+        "navigationBarTitleText": "预约下单",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/orders/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/address/index",
+      "style": {
+        "navigationBarTitleText": "收货地址",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/coupons/index",
+      "style": {
+        "navigationBarTitleText": "优惠券",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/service/index",
+      "style": {
+        "navigationBarTitleText": "联系客服",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/about/index",
+      "style": {
+        "navigationBarTitleText": "关于我们",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/admin-login/index",
+      "style": {
+        "navigationBarTitleText": "管理员登录",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/admin-panel/index",
+      "style": {
+        "navigationBarTitleText": "轻量管理台",
+        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarTextStyle": "black"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#6d8e8a",
+    "selectedColor": "#159d8a",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tab-home.png",
+        "selectedIconPath": "static/tab-home.png"
+      },
+      {
+        "pagePath": "pages/games/index",
+        "text": "菜单",
+        "iconPath": "static/tab-menu.png",
+        "selectedIconPath": "static/tab-menu.png"
+      },
+      {
+        "pagePath": "pages/orders/index",
+        "text": "订单",
+        "iconPath": "static/tab-orders.png",
+        "selectedIconPath": "static/tab-orders.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "static/tab-profile.png",
+        "selectedIconPath": "static/tab-profile.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "云小夏桌游租赁",
+    "navigationBarBackgroundColor": "#f2fffc",
+    "backgroundColor": "#eefbf7"
+  }
+}
