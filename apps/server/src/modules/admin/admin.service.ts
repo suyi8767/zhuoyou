@@ -17,8 +17,8 @@ type EntityName = "banners" | "schools" | "categories" | "games" | "coupons";
 export class AdminService {
   constructor(private readonly store: DataStoreService) {}
 
-  getDashboard() {
-    const state = this.store.getState();
+  async getDashboard() {
+    const state = await this.store.getState();
     const revenue = state.orders
       .filter((item) => item.paymentStatus === "paid")
       .reduce((sum, item) => sum + item.totalAmount, 0);
@@ -34,66 +34,68 @@ export class AdminService {
     };
   }
 
-  list(entity: EntityName) {
-    return [...this.store.getState()[entity]];
+  async list(entity: EntityName) {
+    const state = await this.store.getState();
+    return [...state[entity]];
   }
 
-  createBanner(payload: Omit<Banner, "id">) {
+  async createBanner(payload: Omit<Banner, "id">) {
     return this.createEntity("banners", payload);
   }
 
-  updateBanner(id: string, payload: Partial<Omit<Banner, "id">>) {
+  async updateBanner(id: string, payload: Partial<Omit<Banner, "id">>) {
     return this.updateEntity("banners", id, payload);
   }
 
-  createSchool(payload: Omit<School, "id">) {
+  async createSchool(payload: Omit<School, "id">) {
     return this.createEntity("schools", payload);
   }
 
-  updateSchool(id: string, payload: Partial<Omit<School, "id">>) {
+  async updateSchool(id: string, payload: Partial<Omit<School, "id">>) {
     return this.updateEntity("schools", id, payload);
   }
 
-  createCategory(payload: Omit<BoardGameCategory, "id">) {
+  async createCategory(payload: Omit<BoardGameCategory, "id">) {
     return this.createEntity("categories", payload);
   }
 
-  updateCategory(id: string, payload: Partial<Omit<BoardGameCategory, "id">>) {
+  async updateCategory(
+    id: string,
+    payload: Partial<Omit<BoardGameCategory, "id">>,
+  ) {
     return this.updateEntity("categories", id, payload);
   }
 
-  createGame(payload: Omit<BoardGame, "id">) {
+  async createGame(payload: Omit<BoardGame, "id">) {
     return this.createEntity("games", payload);
   }
 
-  updateGame(id: string, payload: Partial<Omit<BoardGame, "id">>) {
+  async updateGame(id: string, payload: Partial<Omit<BoardGame, "id">>) {
     return this.updateEntity("games", id, payload);
   }
 
-  createCoupon(payload: Omit<Coupon, "id">) {
+  async createCoupon(payload: Omit<Coupon, "id">) {
     return this.createEntity("coupons", payload);
   }
 
-  updateCoupon(id: string, payload: Partial<Omit<Coupon, "id">>) {
+  async updateCoupon(id: string, payload: Partial<Omit<Coupon, "id">>) {
     return this.updateEntity("coupons", id, payload);
   }
 
-  removeEntity(entity: EntityName, id: string) {
-    this.ensureExists(entity, id);
-    this.store.update((state) => {
+  async removeEntity(entity: EntityName, id: string) {
+    await this.ensureExists(entity, id);
+    await this.store.update((state) => {
       state[entity] = state[entity].filter((item) => item.id !== id) as never;
     });
     return { id };
   }
 
-  getOrders() {
-    return this.store
-      .getState()
-      .orders.slice()
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  async getOrders() {
+    const state = await this.store.getState();
+    return state.orders.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  updateOrderStatus(
+  async updateOrderStatus(
     id: string,
     payload: {
       acceptStatus?: "pending" | "confirmed" | "rejected";
@@ -101,39 +103,44 @@ export class AdminService {
       paymentStatus?: "pending" | "paid" | "failed" | "cancelled";
     },
   ) {
-    const order = this.store.getState().orders.find((item) => item.id === id);
+    const state = await this.store.getState();
+    const order = state.orders.find((item) => item.id === id);
     if (!order) {
       throw new NotFoundException("订单不存在");
     }
-    this.store.update((state) => {
-      const target = state.orders.find((item) => item.id === id);
+    await this.store.update((nextState) => {
+      const target = nextState.orders.find((item) => item.id === id);
       if (target) {
         Object.assign(target, payload, { updatedAt: new Date().toISOString() });
       }
     });
-    return this.store.getState().orders.find((item) => item.id === id);
+    const nextState = await this.store.getState();
+    return nextState.orders.find((item) => item.id === id);
   }
 
-  getUsers() {
-    return this.store.getState().users;
+  async getUsers() {
+    const state = await this.store.getState();
+    return state.users;
   }
 
-  getSettings() {
-    return this.store.getState().settings;
+  async getSettings() {
+    const state = await this.store.getState();
+    return state.settings;
   }
 
-  updateSettings(payload: Partial<SystemSetting>) {
-    this.store.update((state) => {
+  async updateSettings(payload: Partial<SystemSetting>) {
+    await this.store.update((state) => {
       state.settings = {
         ...state.settings,
         ...payload,
       };
     });
-    return this.store.getState().settings;
+    const nextState = await this.store.getState();
+    return nextState.settings;
   }
 
-  getReportsOverview() {
-    const state = this.store.getState();
+  async getReportsOverview() {
+    const state = await this.store.getState();
     const today = new Date().toISOString().slice(0, 10);
     const todayOrders = state.orders.filter((item) =>
       item.createdAt.startsWith(today),
@@ -161,17 +168,17 @@ export class AdminService {
     };
   }
 
-  private createEntity(entity: EntityName, payload: object) {
+  private async createEntity(entity: EntityName, payload: object) {
     const record = { id: uuid(), ...payload };
-    this.store.update((state) => {
+    await this.store.update((state) => {
       (state[entity] as Array<{ id: string }>).unshift(record as never);
     });
     return record;
   }
 
-  private updateEntity(entity: EntityName, id: string, payload: object) {
-    this.ensureExists(entity, id);
-    this.store.update((state) => {
+  private async updateEntity(entity: EntityName, id: string, payload: object) {
+    await this.ensureExists(entity, id);
+    await this.store.update((state) => {
       const target = (state[entity] as Array<{ id: string }>).find(
         (item) => item.id === id,
       );
@@ -179,13 +186,13 @@ export class AdminService {
         Object.assign(target, payload);
       }
     });
-    return (this.store.getState()[entity] as Array<{ id: string }>).find(
-      (item) => item.id === id,
-    );
+    const state = await this.store.getState();
+    return (state[entity] as Array<{ id: string }>).find((item) => item.id === id);
   }
 
-  private ensureExists(entity: EntityName, id: string) {
-    const exists = (this.store.getState()[entity] as Array<{ id: string }>).some(
+  private async ensureExists(entity: EntityName, id: string) {
+    const state = await this.store.getState();
+    const exists = (state[entity] as Array<{ id: string }>).some(
       (item) => item.id === id,
     );
     if (!exists) {
@@ -193,4 +200,3 @@ export class AdminService {
     }
   }
 }
-

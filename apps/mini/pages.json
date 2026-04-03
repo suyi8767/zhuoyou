@@ -99,26 +99,26 @@
       {
         "pagePath": "pages/index/index",
         "text": "首页",
-        "iconPath": "static/tab-home.png",
-        "selectedIconPath": "static/tab-home.png"
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home.png"
       },
       {
         "pagePath": "pages/games/index",
         "text": "菜单",
-        "iconPath": "static/tab-menu.png",
-        "selectedIconPath": "static/tab-menu.png"
+        "iconPath": "static/tabbar/menu.png",
+        "selectedIconPath": "static/tabbar/menu.png"
       },
       {
         "pagePath": "pages/orders/index",
         "text": "订单",
-        "iconPath": "static/tab-orders.png",
-        "selectedIconPath": "static/tab-orders.png"
+        "iconPath": "static/tabbar/orders.png",
+        "selectedIconPath": "static/tabbar/orders.png"
       },
       {
         "pagePath": "pages/profile/index",
         "text": "我的",
-        "iconPath": "static/tab-profile.png",
-        "selectedIconPath": "static/tab-profile.png"
+        "iconPath": "static/tabbar/profile.png",
+        "selectedIconPath": "static/tabbar/profile.png"
       }
     ]
   },

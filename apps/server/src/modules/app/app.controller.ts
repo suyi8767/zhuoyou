@@ -64,6 +64,11 @@ class MockPaymentDto {
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Get("/ping")
+  ping() {
+    return { ok: true };
+  }
+
   @Get("/home")
   getHome() {
     return this.appService.getHome();

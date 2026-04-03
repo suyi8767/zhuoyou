@@ -1,16 +1,11 @@
-import { Body, Controller, Post } from "@nestjs/common";
-import { IsOptional, IsString, MinLength } from "class-validator";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+} from "@nestjs/common";
+import { IsString, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
-
-class SilentLoginDto {
-  @IsString()
-  @MinLength(1)
-  code!: string;
-
-  @IsOptional()
-  @IsString()
-  nickname?: string;
-}
 
 class AdminLoginDto {
   @IsString()
@@ -27,8 +22,16 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("/app/auth/wechat-silent")
-  wechatSilentLogin(@Body() body: SilentLoginDto) {
-    return this.authService.loginUser(body.code, body.nickname);
+  wechatSilentLogin(@Body() body: { code?: unknown; nickname?: unknown }) {
+    const code = typeof body?.code === "string" ? body.code.trim() : "";
+    const nickname =
+      typeof body?.nickname === "string" ? body.nickname.trim() : undefined;
+
+    if (!code) {
+      throw new BadRequestException("缺少登录 code");
+    }
+
+    return this.authService.loginUser(code, nickname);
   }
 
   @Post("/admin/auth/login")

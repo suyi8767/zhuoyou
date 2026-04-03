@@ -16,12 +16,11 @@ function extractToken(header?: string) {
 export class AdminAuthGuard implements CanActivate {
   constructor(private readonly store: DataStoreService) {}
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const token = extractToken(request.headers.authorization);
-    const session = this.store
-      .getState()
-      .sessions.find(
+    const state = await this.store.getState();
+    const session = state.sessions.find(
         (item) =>
           item.token === token &&
           item.role === "admin" &&
@@ -41,12 +40,11 @@ export class AdminAuthGuard implements CanActivate {
 export class UserAuthGuard implements CanActivate {
   constructor(private readonly store: DataStoreService) {}
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const token = extractToken(request.headers.authorization);
-    const session = this.store
-      .getState()
-      .sessions.find(
+    const state = await this.store.getState();
+    const session = state.sessions.find(
         (item) =>
           item.token === token &&
           item.role === "user" &&
@@ -61,4 +59,3 @@ export class UserAuthGuard implements CanActivate {
     return true;
   }
 }
-

@@ -12,8 +12,8 @@ import { calculatePreview, createOrderRecord } from "./order.utils";
 export class AppService {
   constructor(private readonly store: DataStoreService) {}
 
-  getHome() {
-    const state = this.store.getState();
+  async getHome() {
+    const state = await this.store.getState();
     return {
       banners: state.banners
         .filter((item) => item.enabled)
@@ -23,36 +23,38 @@ export class AppService {
         (item) => item.featured && item.status === "published",
       ),
       homeConfig: {
-        title: "大学城桌游租赁",
+        title: "云小夏桌游租赁",
         subtitle: "蓝绿青春风，一键预约桌游上门",
         miniAdminEnabled: state.settings.miniAdminEnabled,
       },
     };
   }
 
-  getSchools() {
-    return this.store.getState().schools.filter((item) => item.isActive);
+  async getSchools() {
+    const state = await this.store.getState();
+    return state.schools.filter((item) => item.isActive);
   }
 
-  getDeliverySlots() {
-    return this.store.getState().deliverySlots.filter((item) => item.enabled);
+  async getDeliverySlots() {
+    const state = await this.store.getState();
+    return state.deliverySlots.filter((item) => item.enabled);
   }
 
-  getCoupons() {
-    return this.store.getState().coupons.filter((item) => item.enabled);
+  async getCoupons() {
+    const state = await this.store.getState();
+    return state.coupons.filter((item) => item.enabled);
   }
 
-  getGames(categoryId?: string) {
-    const games = this.store
-      .getState()
-      .games.filter((item) => item.status === "published");
+  async getGames(categoryId?: string) {
+    const state = await this.store.getState();
+    const games = state.games.filter((item) => item.status === "published");
     return categoryId
       ? games.filter((item) => item.categoryId === categoryId)
       : games;
   }
 
-  getGameDetail(id: string) {
-    const state = this.store.getState();
+  async getGameDetail(id: string) {
+    const state = await this.store.getState();
     const game = state.games.find((item) => item.id === id);
     if (!game) {
       throw new NotFoundException("桌游不存在");
@@ -64,7 +66,7 @@ export class AppService {
     };
   }
 
-  previewOrder(input: {
+  async previewOrder(input: {
     gameId: string;
     schoolId: string;
     deliverySlotId: string;
@@ -75,7 +77,7 @@ export class AppService {
     addressDetail: string;
     couponCode?: string;
   }) {
-    const state = this.store.getState();
+    const state = await this.store.getState();
     const game = state.games.find((item) => item.id === input.gameId);
     if (!game) {
       throw new NotFoundException("桌游不存在");
@@ -107,7 +109,7 @@ export class AppService {
     };
   }
 
-  createOrder(
+  async createOrder(
     session: Session,
     input: {
       gameId: string;
@@ -121,7 +123,7 @@ export class AppService {
       couponCode?: string;
     },
   ) {
-    const state = this.store.getState();
+    const state = await this.store.getState();
     const user = state.users.find((item) => item.id === session.userId);
     const game = state.games.find((item) => item.id === input.gameId);
     const school = state.schools.find((item) => item.id === input.schoolId);
@@ -161,7 +163,7 @@ export class AppService {
       preview,
     });
 
-    this.store.update((nextState) => {
+    await this.store.update((nextState) => {
       nextState.orders.unshift(order);
       const targetGame = nextState.games.find((item) => item.id === game.id);
       if (targetGame) {
@@ -177,28 +179,29 @@ export class AppService {
     return order;
   }
 
-  getOrders(session: Session) {
-    return this.store
-      .getState()
-      .orders.filter((item) => item.userId === session.userId)
+  async getOrders(session: Session) {
+    const state = await this.store.getState();
+    return state.orders
+      .filter((item) => item.userId === session.userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  getOrderDetail(session: Session, id: string) {
-    const order = this.store
-      .getState()
-      .orders.find((item) => item.id === id && item.userId === session.userId);
+  async getOrderDetail(session: Session, id: string) {
+    const state = await this.store.getState();
+    const order = state.orders.find(
+      (item) => item.id === id && item.userId === session.userId,
+    );
     if (!order) {
       throw new NotFoundException("订单不存在");
     }
     return order;
   }
 
-  mockPay(
+  async mockPay(
     session: Session,
     input: { orderId: string; outcome?: "success" | "fail" | "cancel" },
   ) {
-    const state = this.store.getState();
+    const state = await this.store.getState();
     const order = state.orders.find(
       (item) => item.id === input.orderId && item.userId === session.userId,
     );
@@ -230,14 +233,16 @@ export class AppService {
           ? "failed"
           : "cancelled";
 
-    this.store.update((nextState) => {
+    await this.store.update((nextState) => {
       const targetOrder = nextState.orders.find((item) => item.id === order.id);
       if (targetOrder) {
         targetOrder.paymentStatus = status;
         targetOrder.updatedAt = new Date().toISOString();
       }
 
-      const existingPayment = nextState.payments.find((item) => item.orderId === order.id);
+      const existingPayment = nextState.payments.find(
+        (item) => item.orderId === order.id,
+      );
       if (existingPayment) {
         existingPayment.status = status;
         existingPayment.updatedAt = new Date().toISOString();
@@ -262,4 +267,3 @@ export class AppService {
     };
   }
 }
-

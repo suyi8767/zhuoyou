@@ -6,9 +6,8 @@
     "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node"],
+    "types": ["node", "express"],
     "strictPropertyInitialization": false
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }
-

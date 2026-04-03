@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { onLoad, onShow, onReady } from "@dcloudio/uni-app";
+import { onLoad, onUnload } from "@dcloudio/uni-app";
 import { request } from "../../api";
 import { useSessionStore } from "../../stores/session";
 
@@ -9,6 +9,9 @@ const categories = ref<any[]>([]);
 const games = ref<any[]>([]);
 const activeCategoryId = ref("");
 const statusBarHeight = ref(20);
+const categoryChangeHandler = (id: string) => {
+  selectCategory(id);
+};
 
 function getStatusBarHeight() {
   try {
@@ -43,16 +46,12 @@ function goDetail(id: string) {
 
 onLoad(async (query) => {
   getStatusBarHeight();
+  uni.$off("change-category", categoryChangeHandler);
+  uni.$on("change-category", categoryChangeHandler);
   await sessionStore.ensureUserSession();
   activeCategoryId.value = String(query?.categoryId || "");
   await loadCategories();
   await loadGames();
-});
-
-onShow(() => {
-  uni.$on("change-category", (id: string) => {
-    selectCategory(id);
-  });
 });
 
 onMounted(async () => {
@@ -60,6 +59,10 @@ onMounted(async () => {
     await loadCategories();
     await loadGames();
   }
+});
+
+onUnload(() => {
+  uni.$off("change-category", categoryChangeHandler);
 });
 </script>
 

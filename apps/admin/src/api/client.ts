@@ -43,3 +43,18 @@ export async function apiDelete<T>(url: string) {
   const response = await client.delete<ApiEnvelope<T>>(url);
   return response.data.data;
 }
+
+export async function apiUploadImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await client.post<ApiEnvelope<{ fileName: string; url: string }>>(
+    "/admin/uploads/image",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+  return response.data.data;
+}

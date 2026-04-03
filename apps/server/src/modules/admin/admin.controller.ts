@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,7 +8,10 @@ import {
   Patch,
   Post,
   Put,
+  Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
   IsArray,
@@ -17,8 +21,20 @@ import {
   IsString,
   Min,
 } from "class-validator";
+import { FileInterceptor } from "@nestjs/platform-express";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { v4 as uuid } from "uuid";
 import { AdminAuthGuard } from "../../common/guards/auth.guards";
 import { AdminService } from "./admin.service";
+
+function resolveUploadsDir() {
+  const cwd = process.cwd();
+  if (cwd.endsWith(path.join("apps", "server"))) {
+    return path.join(cwd, "uploads");
+  }
+  return path.join(cwd, "apps", "server", "uploads");
+}
 
 class BannerDto {
   @IsString()
@@ -158,6 +174,36 @@ class OrderStatusDto {
 @UseGuards(AdminAuthGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  @Post("/uploads/image")
+  @UseInterceptors(FileInterceptor("file"))
+  uploadImage(@UploadedFile() file: any, @Req() request: any) {
+    if (!file) {
+      throw new BadRequestException("请选择图片文件");
+    }
+    if (!String(file.mimetype || "").startsWith("image/")) {
+      throw new BadRequestException("仅支持上传图片文件");
+    }
+
+    const uploadsDir = resolveUploadsDir();
+    fs.mkdirSync(uploadsDir, { recursive: true });
+
+    const ext = path.extname(file.originalname || "") || ".png";
+    const fileName = `${Date.now()}-${uuid()}${ext}`;
+    const targetPath = path.join(uploadsDir, fileName);
+    fs.writeFileSync(targetPath, file.buffer);
+
+    const protocol =
+      request.headers["x-forwarded-proto"] ||
+      request.protocol ||
+      "http";
+    const host = request.headers.host;
+
+    return {
+      fileName,
+      url: `${protocol}://${host}/uploads/${fileName}`,
+    };
+  }
 
   @Get("/dashboard")
   getDashboard() {

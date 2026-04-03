@@ -9,124 +9,6 @@ const orders = ref<any[]>([]);
 const activeStatus = ref("all");
 const statusBarHeight = ref(20);
 
-const mockOrders = [
-  {
-    id: "mock-1",
-    orderNo: "BG2026040301",
-    schoolName: "华南大学城",
-    addressDetail: "6栋302室",
-    contactName: "张同学",
-    contactPhone: "138****8888",
-    rentalStartDate: "2026-04-05",
-    rentalEndDate: "2026-04-07",
-    deliverySlotId: "slot-1",
-    deliverySlotLabel: "下午配送 14:00-18:00",
-    rentalDays: 3,
-    rentSubtotal: 45,
-    deposit: 50,
-    discountAmount: 0,
-    totalAmount: 95,
-    paymentStatus: "pending",
-    acceptStatus: "pending",
-    deliveryStatus: "pending",
-    items: [{ gameId: "g1", name: "阿瓦隆 · 经典聚会版", coverImage: "/static/banner-default.png", dailyPrice: 15, deposit: 50 }],
-    createdAt: "2026-04-03T10:30:00.000Z",
-    updatedAt: "2026-04-03T10:30:00.000Z",
-  },
-  {
-    id: "mock-2",
-    orderNo: "BG2026040202",
-    schoolName: "华南大学城",
-    addressDetail: "3栋105室",
-    contactName: "李同学",
-    contactPhone: "139****6666",
-    rentalStartDate: "2026-04-03",
-    rentalEndDate: "2026-04-05",
-    deliverySlotId: "slot-2",
-    deliverySlotLabel: "上午配送 09:00-12:00",
-    rentalDays: 3,
-    rentSubtotal: 54,
-    deposit: 60,
-    discountAmount: 5,
-    totalAmount: 109,
-    paymentStatus: "paid",
-    acceptStatus: "pending",
-    deliveryStatus: "pending",
-    items: [{ gameId: "g2", name: "卡坦岛 · 策略烧脑版", coverImage: "/static/banner-default.png", dailyPrice: 18, deposit: 60 }],
-    createdAt: "2026-04-02T14:20:00.000Z",
-    updatedAt: "2026-04-02T15:00:00.000Z",
-  },
-  {
-    id: "mock-3",
-    orderNo: "BG2026033103",
-    schoolName: "华南大学城",
-    addressDetail: "8栋201室",
-    contactName: "王同学",
-    contactPhone: "137****5555",
-    rentalStartDate: "2026-04-01",
-    rentalEndDate: "2026-04-04",
-    deliverySlotId: "slot-1",
-    deliverySlotLabel: "下午配送 14:00-18:00",
-    rentalDays: 4,
-    rentSubtotal: 48,
-    deposit: 40,
-    discountAmount: 0,
-    totalAmount: 88,
-    paymentStatus: "paid",
-    acceptStatus: "confirmed",
-    deliveryStatus: "delivering",
-    items: [{ gameId: "g3", name: "狼人杀 · 青春夜聊版", coverImage: "/static/banner-default.png", dailyPrice: 12, deposit: 40 }],
-    createdAt: "2026-03-31T09:15:00.000Z",
-    updatedAt: "2026-04-01T10:00:00.000Z",
-  },
-  {
-    id: "mock-4",
-    orderNo: "BG2026032804",
-    schoolName: "华南大学城",
-    addressDetail: "2栋408室",
-    contactName: "赵同学",
-    contactPhone: "136****3333",
-    rentalStartDate: "2026-03-28",
-    rentalEndDate: "2026-03-30",
-    deliverySlotId: "slot-2",
-    deliverySlotLabel: "上午配送 09:00-12:00",
-    rentalDays: 3,
-    rentSubtotal: 84,
-    deposit: 80,
-    discountAmount: 10,
-    totalAmount: 154,
-    paymentStatus: "paid",
-    acceptStatus: "confirmed",
-    deliveryStatus: "delivered",
-    items: [{ gameId: "g4", name: "火星开发 · 硬核策略版", coverImage: "/static/banner-default.png", dailyPrice: 28, deposit: 80 }],
-    createdAt: "2026-03-28T08:00:00.000Z",
-    updatedAt: "2026-03-30T18:00:00.000Z",
-  },
-  {
-    id: "mock-5",
-    orderNo: "BG2026032505",
-    schoolName: "华南大学城",
-    addressDetail: "5栋110室",
-    contactName: "陈同学",
-    contactPhone: "135****1111",
-    rentalStartDate: "2026-03-20",
-    rentalEndDate: "2026-03-22",
-    deliverySlotId: "slot-1",
-    deliverySlotLabel: "下午配送 14:00-18:00",
-    rentalDays: 3,
-    rentSubtotal: 33,
-    deposit: 30,
-    discountAmount: 0,
-    totalAmount: 63,
-    paymentStatus: "paid",
-    acceptStatus: "confirmed",
-    deliveryStatus: "returned",
-    items: [{ gameId: "g5", name: "璀璨宝石 · 双人轻策版", coverImage: "/static/banner-default.png", dailyPrice: 11, deposit: 30 }],
-    createdAt: "2026-03-19T16:45:00.000Z",
-    updatedAt: "2026-03-22T20:00:00.000Z",
-  },
-];
-
 function getStatusBarHeight() {
   try {
     const info = uni.getSystemInfoSync();
@@ -241,9 +123,9 @@ async function refreshOrders() {
     const result = await request("/app/orders", {
       token: sessionStore.token,
     });
-    orders.value = result.length ? result : mockOrders;
+    orders.value = result;
   } catch {
-    orders.value = mockOrders;
+    orders.value = [];
   }
 }
 
@@ -655,4 +537,3 @@ onShow(async () => {
   color: #fff;
 }
 </style>
-

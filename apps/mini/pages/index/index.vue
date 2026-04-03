@@ -6,7 +6,6 @@ import { useSessionStore } from "../../stores/session";
 
 const sessionStore = useSessionStore();
 const statusBarHeight = ref(20);
-const brandTitle = "云小夏桌游租赁";
 const activeTab = ref("party");
 const home = ref<any>({
   banners: [],
@@ -14,6 +13,8 @@ const home = ref<any>({
   featuredGames: [],
   homeConfig: {},
 });
+const allGames = ref<any[]>([]);
+const coupons = ref<any[]>([]);
 
 const defaultShortcuts = [
   { id: "party", name: "聚会欢乐", iconText: "聚" },
@@ -22,145 +23,11 @@ const defaultShortcuts = [
   { id: "fresh", name: "新手友好", iconText: "新" },
   { id: "campus", name: "校园热门", iconText: "热" },
 ];
-const mockRankingData: Record<string, Array<Record<string, string | number>>> = {
-  party: [
-    {
-      id: "mock-party-1",
-      name: "【爆款】狼人杀青春局",
-      players: "6-12 人",
-      dailyPrice: 12,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-party-2",
-      name: "【爆款】阿瓦隆社团局",
-      players: "5-10 人",
-      dailyPrice: 15,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-party-3",
-      name: "【爆款】谁是卧底热场局",
-      players: "4-10 人",
-      dailyPrice: 9,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-party-4",
-      name: "【爆款】你画我猜欢乐局",
-      players: "4-8 人",
-      dailyPrice: 8,
-      coverImage: "/static/banner-default.png",
-    },
-  ],
-  strategy: [
-    {
-      id: "mock-strategy-1",
-      name: "【爆款】卡坦岛经典策略",
-      players: "3-4 人",
-      dailyPrice: 18,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-strategy-2",
-      name: "【爆款】火星开发沉浸局",
-      players: "1-5 人",
-      dailyPrice: 28,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-strategy-3",
-      name: "【爆款】七大奇迹构筑局",
-      players: "3-7 人",
-      dailyPrice: 16,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-strategy-4",
-      name: "【爆款】璀璨宝石轻策略",
-      players: "2-4 人",
-      dailyPrice: 11,
-      coverImage: "/static/banner-default.png",
-    },
-  ],
-  fresh: [
-    {
-      id: "mock-fresh-1",
-      name: "【新手】UNO 上手快",
-      players: "2-8 人",
-      dailyPrice: 6,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-fresh-2",
-      name: "【新手】三国杀入门局",
-      players: "4-8 人",
-      dailyPrice: 10,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-fresh-3",
-      name: "【新手】卡卡颂轻松拼图",
-      players: "2-5 人",
-      dailyPrice: 12,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-fresh-4",
-      name: "【新手】妙语说书人",
-      players: "3-6 人",
-      dailyPrice: 10,
-      coverImage: "/static/banner-default.png",
-    },
-  ],
-  campus: [
-    {
-      id: "mock-campus-1",
-      name: "【校园】寝室夜聊局",
-      players: "4-6 人",
-      dailyPrice: 7,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-campus-2",
-      name: "【校园】社团破冰局",
-      players: "6-10 人",
-      dailyPrice: 11,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-campus-3",
-      name: "【校园】情侣双人局",
-      players: "2 人",
-      dailyPrice: 13,
-      coverImage: "/static/banner-default.png",
-    },
-    {
-      id: "mock-campus-4",
-      name: "【校园】周末通宵局",
-      players: "3-8 人",
-      dailyPrice: 14,
-      coverImage: "/static/banner-default.png",
-    },
-  ],
-};
 const serviceHighlights = [
   { id: "credit", title: "信用免押", badge: "免" },
   { id: "after-sale", title: "售后无忧", badge: "护" },
   { id: "delivery", title: "极速快送", badge: "达" },
   { id: "campus", title: "校园可达", badge: "校" },
-];
-const featuredProducts = [
-  { id: "featured-1", name: "大疆 Pocket3", price: "¥5/天", image: "/static/banner-default.png", tag: "特价" },
-  { id: "featured-2", name: "索尼微单局", price: "¥18/天", image: "/static/banner-default.png", tag: "爆款" },
-  { id: "featured-3", name: "富士复古局", price: "¥16/天", image: "/static/banner-default.png", tag: "热门" },
-  { id: "featured-4", name: "GoPro 运动局", price: "¥12/天", image: "/static/banner-default.png", tag: "特价" },
-];
-const latestDrops = [
-  { id: "latest-1", name: "阿瓦隆", image: "/static/banner-default.png" },
-  { id: "latest-2", name: "卡坦岛", image: "/static/banner-default.png" },
-  { id: "latest-3", name: "狼人杀", image: "/static/banner-default.png" },
-  { id: "latest-4", name: "璀璨宝石", image: "/static/banner-default.png" },
 ];
 const goodStuffTabs = [
   { key: "good", label: "好物严选", subtitle: "桌游优选" },
@@ -168,30 +35,37 @@ const goodStuffTabs = [
   { key: "card", label: "双人约局", subtitle: "情侣轻松" },
   { key: "micro", label: "策略烧脑", subtitle: "进阶玩家" },
 ];
-const goodStuffProducts = [
-  { id: "good-1", name: "【爆款】阿瓦隆聚会版 一次下单轻松组局", price: "¥15/天", note: "1天起租", image: "/static/banner-default.png" },
-  { id: "good-2", name: "【爆款】卡坦岛经典版 宿舍周末局", price: "¥18/天", note: "1天起租", image: "/static/banner-default.png" },
-  { id: "good-3", name: "【爆款】狼人杀青春版 夜聊热场", price: "¥12/天", note: "1天起租", image: "/static/banner-default.png" },
-  { id: "good-4", name: "【爆款】璀璨宝石双人轻策略", price: "¥11/天", note: "1天起租", image: "/static/banner-default.png" },
-  { id: "good-5", name: "【爆款】妙语说书人 朋友破冰局", price: "¥10/天", note: "1天起租", image: "/static/banner-default.png" },
-  { id: "good-6", name: "【爆款】火星开发 硬核策略局", price: "¥28/天", note: "1天起租", image: "/static/banner-default.png" },
-];
 
-const bannerList = computed(() => [
-  {
-    id: "default-banner",
-    title: brandTitle,
-    subtitle: "大学城桌游上门，青春聚会轻松开场",
-    image: "/static/banner-default.png",
-  },
-]);
+const brandTitle = computed(
+  () => home.value.homeConfig?.title || "云小夏桌游租赁",
+);
+
+const bannerList = computed(() => {
+  const banners = (home.value.banners || []).filter((item: any) => item.enabled !== false);
+  if (banners.length) {
+    return banners;
+  }
+  return [
+    {
+      id: "default-banner",
+      title: brandTitle.value,
+      subtitle: "大学城桌游上门，青春聚会轻松开场",
+      image: "/static/banner-default.png",
+    },
+  ];
+});
 
 const shortcutCategories = computed(() => {
   const categories = home.value.categories || [];
-  return defaultShortcuts.map((item, index) => ({
-    ...item,
-    categoryId: categories[index]?.id || "",
-  }));
+  if (categories.length) {
+    return categories.slice(0, 5).map((item: any, index: number) => ({
+      id: item.id,
+      name: item.name,
+      iconText: defaultShortcuts[index]?.iconText || item.name?.slice(0, 1) || "桌",
+      categoryId: item.id,
+    }));
+  }
+  return defaultShortcuts.map((item) => ({ ...item, categoryId: "" }));
 });
 
 const featuredGames = computed(() => home.value.featuredGames || []);
@@ -204,10 +78,8 @@ const rankingTabs = [
 ];
 
 const rankingGames = computed(() => {
-  const games = featuredGames.value.length ? featuredGames.value : [];
-  if (!games.length) {
-    return mockRankingData[activeTab.value] || mockRankingData.party;
-  }
+  const sourceGames = allGames.value.length ? allGames.value : featuredGames.value;
+  const games = [...sourceGames];
   if (activeTab.value === "strategy") {
     return games.filter(
       (game: any) =>
@@ -228,30 +100,58 @@ const rankingGames = computed(() => {
       ),
     );
   }
-  return games.length ? games : mockRankingData.party;
+  return games;
 });
 
+const featuredProducts = computed(() =>
+  allGames.value.slice(0, 4).map((item: any, index: number) => ({
+    id: item.id,
+    name: item.name,
+    price: `¥${item.dailyPrice}/天`,
+    image: item.coverImage,
+    tag: coupons.value[index]?.name || (item.tags || [])[0] || "推荐",
+  })),
+);
+
+const latestDrops = computed(() =>
+  allGames.value.slice(0, 4).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    image: item.coverImage,
+  })),
+);
+
+const goodStuffProducts = computed(() =>
+  allGames.value.map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    price: `¥${item.dailyPrice}/天`,
+    note: "1天起租",
+    image: item.coverImage,
+  })),
+);
+
 const collageCards = computed(() => {
-  const games = featuredGames.value;
+  const games = featuredGames.value.length ? featuredGames.value : allGames.value;
   return [
     {
       id: "collage-main",
-      title: "毕业季桌游推荐",
-      subtitle: "青春不散场，聚会记录更尽兴",
+      title: games[0]?.name || "热门桌游推荐",
+      subtitle: games[0]?.description || "后台有内容时优先展示真实桌游数据",
       image: games[0]?.coverImage || "/static/banner-default.png",
       gameId: games[0]?.id,
     },
     {
       id: "collage-side-1",
-      title: games[1]?.name || "阿瓦隆",
-      subtitle: "立即租组局",
+      title: games[1]?.name || "聚会热门",
+      subtitle: games[1]?.players || "立即租组局",
       image: games[1]?.coverImage || "/static/banner-default.png",
       gameId: games[1]?.id,
     },
     {
       id: "collage-side-2",
-      title: games[2]?.name || "卡坦岛",
-      subtitle: "立即租组局",
+      title: games[2]?.name || "策略烧脑",
+      subtitle: games[2]?.players || "立即租组局",
       image: games[2]?.coverImage || "/static/banner-default.png",
       gameId: games[2]?.id,
     },
@@ -260,7 +160,14 @@ const collageCards = computed(() => {
 
 async function loadHome() {
   await sessionStore.ensureUserSession();
-  home.value = await request("/app/home");
+  const [homeData, gamesData, couponsData] = await Promise.all([
+    request<any>("/app/home"),
+    request<any[]>("/app/games"),
+    request<any[]>("/app/coupons"),
+  ]);
+  home.value = homeData;
+  allGames.value = gamesData || [];
+  coupons.value = couponsData || [];
 }
 
 function getStatusBarHeight() {
