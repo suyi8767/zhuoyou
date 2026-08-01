@@ -1,5 +1,24 @@
 import { defineStore } from "pinia";
 import { request } from "../api";
+import { USE_LOCAL_API } from "../config";
+
+function getWechatLoginCode() {
+  return new Promise<string>((resolve, reject) => {
+    uni.login({
+      provider: "weixin",
+      success: (res) => {
+        if (res.code) {
+          resolve(res.code);
+          return;
+        }
+        reject(new Error("微信登录未返回 code"));
+      },
+      fail: (err: any) => {
+        reject(new Error(err?.errMsg || "微信登录失败"));
+      },
+    });
+  });
+}
 
 export const useSessionStore = defineStore("session", {
   state: () => ({
@@ -13,7 +32,17 @@ export const useSessionStore = defineStore("session", {
       if (this.token && this.user) {
         return;
       }
-      const code = `demo-${Date.now()}`;
+
+      let code = "";
+      try {
+        code = await getWechatLoginCode();
+      } catch (error) {
+        if (!USE_LOCAL_API) {
+          throw error;
+        }
+        code = `demo-${Date.now()}`;
+      }
+
       const data = await request<any>("/app/auth/wechat-silent", {
         method: "POST",
         data: {

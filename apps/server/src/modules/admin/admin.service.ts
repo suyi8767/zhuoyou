@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { v4 as uuid } from "uuid";
 import { DataStoreService } from "../../database/data-store.service";
 import type {
@@ -7,6 +11,7 @@ import type {
   BoardGameCategory,
   Coupon,
   DeliveryStatus,
+  DepositRefundStatus,
   School,
   SystemSetting,
 } from "../../database/models";
@@ -101,6 +106,7 @@ export class AdminService {
       acceptStatus?: "pending" | "confirmed" | "rejected";
       deliveryStatus?: DeliveryStatus;
       paymentStatus?: "pending" | "paid" | "failed" | "cancelled";
+      depositRefundStatus?: DepositRefundStatus;
     },
   ) {
     const state = await this.store.getState();
@@ -108,12 +114,67 @@ export class AdminService {
     if (!order) {
       throw new NotFoundException("订单不存在");
     }
+    const patch = Object.fromEntries(
+      Object.entries(payload).filter(([, value]) => value !== undefined),
+    );
     await this.store.update((nextState) => {
       const target = nextState.orders.find((item) => item.id === id);
       if (target) {
-        Object.assign(target, payload, { updatedAt: new Date().toISOString() });
+        Object.assign(target, patch, { updatedAt: new Date().toISOString() });
       }
     });
+    const nextState = await this.store.getState();
+    return nextState.orders.find((item) => item.id === id);
+  }
+
+  async refundDeposit(id: string) {
+    const state = await this.store.getState();
+    const order = state.orders.find((item) => item.id === id);
+    if (!order) {
+      throw new NotFoundException("订单不存在");
+    }
+
+    const depositAmount = Number(
+      (order as any).payableDeposit ?? order.deposit ?? 0,
+    );
+    if (depositAmount <= 0) {
+      throw new BadRequestException("该订单没有可退押金");
+    }
+    const alreadyRefunded =
+      order.depositRefundStatus === "refunded" ||
+      !!(order as any).depositRefundedAt ||
+      !!(order as any).depositRefundId ||
+      !!(order as any).depositRefundOutNo;
+    if (alreadyRefunded) {
+      // 顺带纠正状态字段，避免前端继续显示「未退还」
+      if (order.depositRefundStatus !== "refunded") {
+        await this.store.update((nextState) => {
+          const target = nextState.orders.find((item) => item.id === id);
+          if (target) {
+            target.depositRefundStatus = "refunded";
+            target.updatedAt = new Date().toISOString();
+          }
+        });
+      }
+      throw new BadRequestException("押金已退还，请勿重复操作");
+    }
+    // 兼容历史数据：有押金金额且未标记已退，即可退还
+    if (order.paymentStatus && order.paymentStatus !== "paid") {
+      throw new BadRequestException("仅已付款订单可退押金");
+    }
+
+    const now = new Date().toISOString();
+    await this.store.update((nextState) => {
+      const target = nextState.orders.find((item) => item.id === id) as any;
+      if (target) {
+        target.depositRefundStatus = "refunded";
+        target.depositRefundAmount = depositAmount;
+        target.depositRefundedAt = now;
+        target.depositRefundNote = "管理员手动退押金";
+        target.updatedAt = now;
+      }
+    });
+
     const nextState = await this.store.getState();
     return nextState.orders.find((item) => item.id === id);
   }

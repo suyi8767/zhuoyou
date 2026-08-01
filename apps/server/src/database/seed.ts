@@ -24,8 +24,8 @@ export function createSeedData(): DashboardState {
     admins: [
       {
         id: admin1,
-        username: "admin",
-        password: "admin123",
+        username: "jiangdongyunxia",
+        password: "jiangdongyunxia620",
         name: "青春运营官",
         avatar:
           "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",

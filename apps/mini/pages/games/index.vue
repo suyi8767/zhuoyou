@@ -130,21 +130,16 @@ onUnload(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5faf9;
+  background: #f7f9fc;
   overflow: hidden;
 }
 
-/* ── 顶部标题栏 ── */
 .top-section {
-  background:
-    radial-gradient(circle at right top, rgba(255, 255, 255, 0.18), transparent 22%),
-    linear-gradient(to top right, #4a90e2 0%, #4a90e2 56%, #26a69a 100%);
-  padding-bottom: 60rpx;
+  background: linear-gradient(180deg, #eef5ff 0%, #f7f9fc 100%);
+  padding-bottom: 36rpx;
   padding-left: 40rpx;
   padding-right: 40rpx;
   flex-shrink: 0;
-  border-radius: 0 0 40rpx 40rpx;
-  box-shadow: 0 16rpx 40rpx rgba(38, 166, 154, 0.18);
 }
 
 .page-header {
@@ -155,8 +150,8 @@ onUnload(() => {
 
 .page-title {
   font-size: 44rpx;
-  font-weight: bold;
-  color: #ffffff;
+  font-weight: 800;
+  color: #111827;
   display: inline-block;
   position: relative;
   z-index: 2;
@@ -164,11 +159,11 @@ onUnload(() => {
 
 .title-decoration {
   position: absolute;
-  left: 24rpx;
-  right: -24rpx;
-  bottom: -1rpx;
-  height: 26rpx;
-  background: rgba(255, 255, 255, 0.38);
+  left: 8rpx;
+  right: -8rpx;
+  bottom: 2rpx;
+  height: 14rpx;
+  background: rgba(59, 130, 246, 0.18);
   border-radius: 8rpx;
   z-index: 1;
 }
@@ -176,20 +171,19 @@ onUnload(() => {
 .layout {
   display: flex;
   flex: 1;
-  background: #f5faf9;
+  background: #ffffff;
   overflow: hidden;
   min-height: 0;
-  margin-top: -30rpx;
-  border-radius: 30rpx 30rpx 0 0;
+  border-radius: 28rpx 28rpx 0 0;
   position: relative;
   z-index: 10;
+  box-shadow: 0 -8rpx 28rpx rgba(148, 163, 184, 0.08);
 }
 
-/* ── 左侧分类栏 ── */
 .sidebar {
   width: 180rpx;
   height: 100%;
-  background: #eef6f4;
+  background: #f8fafc;
   flex-shrink: 0;
 }
 
@@ -205,21 +199,20 @@ onUnload(() => {
 
 .sidebar-item.active {
   background: #ffffff;
-  border-left-color: #159d8a;
+  border-left-color: #3b82f6;
 }
 
 .sidebar-text {
   font-size: 26rpx;
-  color: #7a9e9a;
+  color: #9ca3af;
   line-height: 1.4;
 }
 
 .sidebar-item.active .sidebar-text {
-  color: #159d8a;
+  color: #3b82f6;
   font-weight: 700;
 }
 
-/* ── 右侧内容区 ── */
 .content {
   flex: 1;
   height: 100%;
@@ -237,28 +230,29 @@ onUnload(() => {
 .content-category-name {
   font-size: 32rpx;
   font-weight: 800;
-  color: #2a4a47;
+  color: #111827;
 }
 
 .content-count {
   font-size: 22rpx;
-  color: #9bbab6;
+  color: #9ca3af;
 }
 
-/* ── 游戏卡片 ── */
 .game-card {
   display: flex;
   background: #ffffff;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   overflow: hidden;
   margin-bottom: 18rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid #eef2f7;
+  box-shadow: 0 8rpx 22rpx rgba(148, 163, 184, 0.08);
 }
 
 .card-cover {
   width: 180rpx;
   height: 180rpx;
   flex-shrink: 0;
+  background: #f8fafc;
 }
 
 .card-body {
@@ -273,7 +267,7 @@ onUnload(() => {
 .card-title {
   font-size: 28rpx;
   font-weight: 700;
-  color: #1e3a37;
+  color: #111827;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -282,7 +276,7 @@ onUnload(() => {
 .card-tags,
 .card-meta {
   font-size: 22rpx;
-  color: #9bbab6;
+  color: #9ca3af;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -298,7 +292,7 @@ onUnload(() => {
 .card-price {
   font-size: 32rpx;
   font-weight: 800;
-  color: #159d8a;
+  color: #3b82f6;
 }
 
 .card-unit {
@@ -308,13 +302,13 @@ onUnload(() => {
 
 .card-stock {
   font-size: 22rpx;
-  color: #b0c8c5;
+  color: #cbd5e1;
 }
 
 .empty-tip {
   text-align: center;
   padding: 80rpx 0;
-  color: #b0c8c5;
+  color: #9ca3af;
   font-size: 28rpx;
 }
 </style>

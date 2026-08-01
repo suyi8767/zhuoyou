@@ -4,48 +4,51 @@
       "path": "pages/index/index",
       "style": {
         "navigationStyle": "custom",
-        "backgroundColor": "#eefbf7"
+        "backgroundColor": "#f7f9fc"
       }
     },
     {
       "path": "pages/games/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
       }
     },
     {
       "path": "pages/game-detail/index",
       "style": {
         "navigationBarTitleText": "桌游详情",
-        "navigationBarBackgroundColor": "#f2fffc",
-        "navigationBarTextStyle": "black"
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black",
+        "backgroundColor": "#ffffff"
       }
     },
     {
       "path": "pages/order-create/index",
       "style": {
-        "navigationBarTitleText": "预约下单",
-        "navigationBarBackgroundColor": "#f2fffc",
-        "navigationBarTextStyle": "black"
+        "navigationStyle": "custom",
+        "backgroundColor": "#f5f7fb"
       }
     },
     {
       "path": "pages/orders/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
       }
     },
     {
       "path": "pages/profile/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
       }
     },
     {
       "path": "pages/address/index",
       "style": {
         "navigationBarTitleText": "收货地址",
-        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
     },
@@ -53,7 +56,7 @@
       "path": "pages/coupons/index",
       "style": {
         "navigationBarTitleText": "优惠券",
-        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
     },
@@ -61,7 +64,7 @@
       "path": "pages/service/index",
       "style": {
         "navigationBarTitleText": "联系客服",
-        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
     },
@@ -69,7 +72,7 @@
       "path": "pages/about/index",
       "style": {
         "navigationBarTitleText": "关于我们",
-        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
     },
@@ -77,7 +80,7 @@
       "path": "pages/admin-login/index",
       "style": {
         "navigationBarTitleText": "管理员登录",
-        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
     },
@@ -85,26 +88,26 @@
       "path": "pages/admin-panel/index",
       "style": {
         "navigationBarTitleText": "轻量管理台",
-        "navigationBarBackgroundColor": "#f2fffc",
+        "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
     }
   ],
   "tabBar": {
-    "color": "#6d8e8a",
-    "selectedColor": "#159d8a",
+    "color": "#9ca3af",
+    "selectedColor": "#3b82f6",
     "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
         "text": "首页",
         "iconPath": "static/tabbar/home.png",
-        "selectedIconPath": "static/tabbar/home.png"
+        "selectedIconPath": "static/tabbar/home-active.png"
       },
       {
         "pagePath": "pages/games/index",
-        "text": "菜单",
+        "text": "分类",
         "iconPath": "static/tabbar/menu.png",
         "selectedIconPath": "static/tabbar/menu.png"
       },
@@ -125,7 +128,7 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "云小夏桌游租赁",
-    "navigationBarBackgroundColor": "#f2fffc",
-    "backgroundColor": "#eefbf7"
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f7f9fc"
   }
 }

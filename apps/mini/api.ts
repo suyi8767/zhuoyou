@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config";
+import { API_BASE_URL, APP_API_PREFIX } from "./config";
 
 interface ApiOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -6,10 +6,17 @@ interface ApiOptions {
   token?: string;
 }
 
+function resolveUrl(url: string) {
+  if (url === "/app" || url.startsWith("/app/")) {
+    return `${API_BASE_URL}${url.replace(/^\/app/, APP_API_PREFIX)}`;
+  }
+  return `${API_BASE_URL}${url}`;
+}
+
 export function request<T>(url: string, options: ApiOptions = {}) {
   return new Promise<T>((resolve, reject) => {
     uni.request({
-      url: `${API_BASE_URL}${url}`,
+      url: resolveUrl(url),
       method: options.method || "GET",
       data: options.data,
       header: options.token
@@ -23,9 +30,20 @@ export function request<T>(url: string, options: ApiOptions = {}) {
           resolve(payload.data as T);
           return;
         }
-        reject(payload);
+        const message =
+          payload?.message ||
+          payload?.error ||
+          `接口失败 ${url} (${res.statusCode || "?"})`;
+        reject(new Error(message));
       },
-      fail: reject,
+      fail: (err: any) => {
+        reject(
+          new Error(
+            err?.errMsg ||
+              `网络请求失败，请确认后端已启动且可访问 ${API_BASE_URL}`,
+          ),
+        );
+      },
     });
   });
 }

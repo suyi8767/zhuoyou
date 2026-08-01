@@ -124,6 +124,7 @@ export function createOrderRecord(input: {
     paymentStatus: "pending",
     acceptStatus,
     deliveryStatus: "pending",
+    depositRefundStatus: "none",
     couponCode: input.couponCode,
     items: [
       {

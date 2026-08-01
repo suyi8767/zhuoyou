@@ -12,8 +12,8 @@ const editingId = ref("");
 const uploadingKey = ref("");
 
 const loginForm = reactive({
-  username: "admin",
-  password: "admin123",
+  username: "jiangdongyunxia",
+  password: "jiangdongyunxia620",
 });
 
 const entityForm = reactive<Record<string, any>>({});

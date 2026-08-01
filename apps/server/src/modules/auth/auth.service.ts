@@ -4,8 +4,20 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { randomBytes } from "node:crypto";
+import * as bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { DataStoreService } from "../../database/data-store.service";
+
+function isBcryptHash(value: string) {
+  return /^\$2[aby]?\$\d{2}\$[./A-Za-z0-9]{53}$/.test(value);
+}
+
+async function matchPassword(raw: string, stored: string) {
+  if (isBcryptHash(stored)) {
+    return bcrypt.compare(raw, stored);
+  }
+  return stored === raw;
+}
 
 @Injectable()
 export class AuthService {
@@ -39,17 +51,24 @@ export class AuthService {
 
   async loginAdmin(username: string, password: string) {
     const state = await this.store.getState();
-    const admin = state.admins.find(
-      (item) =>
-        item.username === username.trim() && item.password === password.trim(),
-    );
+    const inputUser = username.trim();
+    const inputPass = password.trim();
+    let matched: (typeof state.admins)[number] | undefined;
 
-    if (!admin) {
+    for (const item of state.admins) {
+      if (item.username !== inputUser) continue;
+      if (await matchPassword(inputPass, item.password)) {
+        matched = item;
+        break;
+      }
+    }
+
+    if (!matched) {
       throw new UnauthorizedException("账号或密码不正确");
     }
 
-    const token = await this.createSession(admin.id, "admin");
-    return { token, admin };
+    const token = await this.createSession(matched.id, "admin");
+    return { token, admin: matched };
   }
 
   async getAdminProfile(adminId: string) {

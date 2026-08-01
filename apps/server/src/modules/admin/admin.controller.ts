@@ -168,6 +168,10 @@ class OrderStatusDto {
   @IsOptional()
   @IsString()
   paymentStatus?: "pending" | "paid" | "failed" | "cancelled";
+
+  @IsOptional()
+  @IsString()
+  depositRefundStatus?: "none" | "pending" | "refunded";
 }
 
 @Controller("/admin")
@@ -298,6 +302,11 @@ export class AdminController {
   @Patch("/orders/:id/status")
   updateOrderStatus(@Param("id") id: string, @Body() body: OrderStatusDto) {
     return this.adminService.updateOrderStatus(id, body);
+  }
+
+  @Post("/orders/:id/refund-deposit")
+  refundDeposit(@Param("id") id: string) {
+    return this.adminService.refundDeposit(id);
   }
 
   @Get("/users")

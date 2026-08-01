@@ -40,22 +40,22 @@ function getOrderDisplayStatus(order: any): string {
 
 function getStatusColor(status: string): string {
   const map: Record<string, string> = {
-    "待付款": "#e6a23c",
-    "待确认": "#409eff",
-    "使用中": "#159d8a",
-    "待结算": "#e6a23c",
-    "已完成": "#909399",
-    "已取消": "#909399",
-    "支付失败": "#f56c6c",
-    "已拒绝": "#f56c6c",
+    待付款: "#f5b800",
+    待确认: "#f5b800",
+    使用中: "#3b82f6",
+    待结算: "#f5b800",
+    已完成: "#9ca3af",
+    已取消: "#9ca3af",
+    支付失败: "#ef4444",
+    已拒绝: "#ef4444",
   };
-  return map[status] || "#909399";
+  return map[status] || "#9ca3af";
 }
 
 const filteredOrders = computed(() => {
   if (activeStatus.value === "all") return orders.value;
   return orders.value.filter(
-    (o) => getOrderDisplayStatus(o) === activeStatus.value
+    (o) => getOrderDisplayStatus(o) === activeStatus.value,
   );
 });
 
@@ -64,7 +64,7 @@ const orderCount = computed(() => orders.value.length);
 const totalSpent = computed(() =>
   orders.value
     .filter((o) => o.paymentStatus === "paid")
-    .reduce((sum, o) => sum + o.totalAmount, 0)
+    .reduce((sum, o) => sum + o.totalAmount, 0),
 );
 
 function statusCount(key: string): number {
@@ -79,9 +79,7 @@ function formatTime(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function goDetail(id: string) {
-  // 可扩展跳转订单详情页
-}
+function goDetail(_id: string) {}
 
 async function handlePay(order: any) {
   try {
@@ -102,7 +100,6 @@ async function handleCancel(order: any) {
     content: "确认取消该订单吗？",
     success: async (res) => {
       if (res.confirm) {
-        // 模拟取消（通过 mock pay cancel）
         try {
           await request("/app/payments/mock", {
             orderId: order.id,
@@ -137,169 +134,144 @@ onShow(async () => {
 </script>
 
 <template>
-  <view class="orders-page">
-    <!-- 自定义顶部栏 -->
-    <view class="top-section" :style="{ paddingTop: statusBarHeight + 'px' }">
-      <view class="page-header">
-        <text class="page-title">我的订单</text>
-        <view class="title-decoration"></view>
-      </view>
-    </view>
-
-    <view class="orders-body">
-    <!-- 订单信息摘要 -->
-    <view class="summary-card">
-      <text class="summary-label">订单信息</text>
-      <view class="summary-row">
-        <text class="summary-item">订单总数：<text class="summary-val">{{ orderCount }}</text></text>
-        <text class="summary-item">总消费：<text class="summary-val price">¥{{ totalSpent.toFixed(2) }}</text></text>
-      </view>
-    </view>
-
-    <!-- 状态选项卡 -->
-    <view class="status-tabs">
-      <view
-        v-for="tab in statusTabs"
-        :key="tab.key"
-        :class="['tab-item', { active: activeStatus === tab.key }]"
-        @click="activeStatus = tab.key"
-      >
-        <text class="tab-count">{{ statusCount(tab.key) }}</text>
-        <text class="tab-label">{{ tab.label }}</text>
-      </view>
-    </view>
-
-    <!-- 订单列表 -->
-    <view v-if="!filteredOrders.length" class="empty-card">
-      <text class="empty-text">暂无相关订单</text>
-    </view>
-
-    <view
-      v-for="order in filteredOrders"
-      :key="order.id"
-      class="order-card"
-    >
-      <!-- 卡片头：类型标签 + 时间 + 状态 -->
-      <view class="card-header">
-        <view class="type-tag">租赁</view>
-        <text class="order-time">下单时间：{{ formatTime(order.createdAt) }}</text>
-        <text
-          class="status-badge"
-          :style="{ color: getStatusColor(getOrderDisplayStatus(order)) }"
-        >
-          {{ getOrderDisplayStatus(order) }}
-        </text>
+  <view class="page">
+    <view class="page-pad" :style="{ paddingTop: statusBarHeight + 'px' }">
+      <view class="brand">
+        <text class="brand-title">我的订单</text>
+        <text class="brand-subtitle">查看租赁进度与消费记录</text>
       </view>
 
-      <!-- 商品信息 -->
-      <view class="product-row" v-for="item in order.items" :key="item.gameId">
-        <image :src="item.coverImage" class="product-img" mode="aspectFill" />
-        <view class="product-info">
-          <text class="product-name">{{ item.name }}</text>
-          <text class="product-sub">{{ order.rentalStartDate }} 至 {{ order.rentalEndDate }} · {{ order.rentalDays }}天</text>
-        </view>
-        <view class="product-price-col">
-          <text class="product-price">¥{{ item.dailyPrice.toFixed(2) }}/天</text>
-          <text class="product-qty">×{{ order.rentalDays }}</text>
+      <view class="summary">
+        <text class="summary-title">订单信息</text>
+        <view class="summary-row">
+          <text class="summary-item">
+            订单总数：
+            <text class="summary-num">{{ orderCount }}</text>
+          </text>
+          <text class="summary-item">
+            总消费：
+            <text class="summary-price">¥{{ totalSpent.toFixed(2) }}</text>
+          </text>
         </view>
       </view>
 
-      <!-- 费用汇总 -->
-      <view class="cost-row">
-        <text class="cost-label" v-if="order.deposit">押金 ¥{{ order.deposit.toFixed(2) }}</text>
-        <text class="cost-total">合计 <text class="cost-amount">¥{{ order.totalAmount.toFixed(2) }}</text></text>
-      </view>
-
-      <!-- 操作按钮 -->
-      <view class="action-row">
+      <view class="tabs">
         <view
-          v-if="getOrderDisplayStatus(order) === '待付款'"
-          class="action-btn outline"
-          @click="handleCancel(order)"
+          v-for="tab in statusTabs"
+          :key="tab.key"
+          :class="['tab', { active: activeStatus === tab.key }]"
+          @click="activeStatus = tab.key"
         >
-          取消订单
-        </view>
-        <view
-          v-if="getOrderDisplayStatus(order) === '待付款'"
-          class="action-btn primary"
-          @click="handlePay(order)"
-        >
-          立即付款
-        </view>
-        <view class="action-btn outline" @click="goDetail(order.id)">
-          查看详情
+          <text class="tab-count">{{ statusCount(tab.key) }}</text>
+          <text class="tab-label">{{ tab.label }}</text>
         </view>
       </view>
-    </view>
+
+      <view v-if="!filteredOrders.length" class="empty">暂无相关订单</view>
+
+      <view v-for="order in filteredOrders" :key="order.id" class="order">
+        <view class="order-head">
+          <text class="order-tag">租赁</text>
+          <text class="order-time">下单时间：{{ formatTime(order.createdAt) }}</text>
+          <text
+            class="order-status"
+            :style="{ color: getStatusColor(getOrderDisplayStatus(order)) }"
+          >
+            {{ getOrderDisplayStatus(order) }}
+          </text>
+        </view>
+
+        <view
+          v-for="item in order.items"
+          :key="item.gameId"
+          class="product"
+        >
+          <image :src="item.coverImage" class="product-img" mode="aspectFill" />
+          <view class="product-info">
+            <text class="product-name">{{ item.name }}</text>
+            <text class="product-sub">
+              {{ order.rentalStartDate }} 至 {{ order.rentalEndDate }} ·
+              {{ order.rentalDays }}天
+            </text>
+          </view>
+          <view class="product-side">
+            <text class="product-price">¥{{ item.dailyPrice.toFixed(2) }}/天</text>
+            <text class="product-qty">×{{ order.rentalDays }}</text>
+          </view>
+        </view>
+
+        <view class="cost">
+          <text v-if="order.deposit" class="cost-deposit">
+            押金 ¥{{ order.deposit.toFixed(2) }}
+          </text>
+          <text class="cost-total">
+            合计
+            <text class="cost-amount">¥{{ order.totalAmount.toFixed(2) }}</text>
+          </text>
+        </view>
+
+        <view class="actions">
+          <view
+            v-if="getOrderDisplayStatus(order) === '待付款'"
+            class="btn ghost"
+            @click="handleCancel(order)"
+          >
+            取消订单
+          </view>
+          <view
+            v-if="getOrderDisplayStatus(order) === '待付款'"
+            class="btn primary"
+            @click="handlePay(order)"
+          >
+            立即付款
+          </view>
+          <view class="btn ghost" @click="goDetail(order.id)">查看详情</view>
+        </view>
+      </view>
     </view>
   </view>
 </template>
 
 <style scoped>
-.orders-page {
+.page {
   min-height: 100vh;
-  background: #f5f6f8;
+  background: linear-gradient(180deg, #e8f2ff 0%, #f5f9ff 32%, #ffffff 62%);
+  padding-bottom: 120rpx;
 }
 
-/* ── 顶部标题栏 ── */
-.top-section {
-  background:
-    radial-gradient(circle at right top, rgba(255, 255, 255, 0.18), transparent 22%),
-    linear-gradient(to top right, #4a90e2 0%, #4a90e2 56%, #26a69a 100%);
-  padding-bottom: 60rpx;
-  padding-left: 40rpx;
-  padding-right: 40rpx;
-  border-radius: 0 0 40rpx 40rpx;
-  box-shadow: 0 16rpx 40rpx rgba(38, 166, 154, 0.18);
+.page-pad {
+  padding: 8rpx 36rpx 0;
 }
 
-.page-header {
-  margin-top: 20rpx;
-  position: relative;
-  display: inline-block;
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  margin-bottom: 28rpx;
 }
 
-.page-title {
-  font-size: 44rpx;
-  font-weight: bold;
-  color: #ffffff;
-  display: inline-block;
-  position: relative;
-  z-index: 2;
+.brand-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
 }
 
-.title-decoration {
-  position: absolute;
-  left: 24rpx;
-  right: -24rpx;
-  bottom: -1rpx;
-  height: 26rpx;
-  background: rgba(255, 255, 255, 0.38);
-  border-radius: 8rpx;
-  z-index: 1;
+.brand-subtitle {
+  font-size: 24rpx;
+  color: #9ca3af;
 }
 
-.orders-body {
-  padding: 0 24rpx 120rpx;
-  margin-top: -30rpx;
-  position: relative;
-  z-index: 10;
+.summary {
+  padding: 8rpx 0 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
-/* ── 摘要卡片 ── */
-.summary-card {
-  margin-top: 20rpx;
-  background: #ffffff;
-  border-radius: 20rpx;
-  padding: 28rpx 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
-}
-
-.summary-label {
+.summary-title {
+  display: block;
   font-size: 30rpx;
   font-weight: 700;
-  color: #1e1e1e;
-  display: block;
+  color: #111827;
   margin-bottom: 16rpx;
 }
 
@@ -310,100 +282,89 @@ onShow(async () => {
 
 .summary-item {
   font-size: 24rpx;
-  color: #666;
+  color: #6b7280;
 }
 
-.summary-val {
+.summary-num {
   font-weight: 700;
-  color: #333;
+  color: #111827;
 }
 
-.summary-val.price {
-  color: #e6a23c;
+.summary-price {
+  font-weight: 700;
+  color: #f5b800;
 }
 
-/* ── 状态选项卡 ── */
-.status-tabs {
-  margin-top: 20rpx;
-  background: #ffffff;
-  border-radius: 20rpx;
-  padding: 24rpx 10rpx;
+.tabs {
+  margin-top: 8rpx;
+  padding: 22rpx 0 8rpx;
   display: flex;
   justify-content: space-around;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
-.tab-item {
+.tab {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8rpx;
-  padding: 8rpx 16rpx;
+  padding: 6rpx 10rpx 14rpx;
   position: relative;
 }
 
-.tab-item.active .tab-label {
-  color: #159d8a;
+.tab.active .tab-label {
+  color: #111827;
   font-weight: 700;
 }
 
-.tab-item.active::after {
+.tab.active::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 36rpx;
+  width: 32rpx;
   height: 4rpx;
-  border-radius: 2rpx;
-  background: #159d8a;
+  border-radius: 999rpx;
+  background: #f5b800;
 }
 
 .tab-count {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 800;
-  color: #1e1e1e;
+  color: #111827;
 }
 
 .tab-label {
   font-size: 22rpx;
-  color: #999;
+  color: #9ca3af;
 }
 
-/* ── 空状态 ── */
-.empty-card {
-  margin-top: 80rpx;
+.empty {
+  margin-top: 100rpx;
   text-align: center;
-}
-
-.empty-text {
-  color: #bbb;
+  color: #9ca3af;
   font-size: 28rpx;
 }
 
-/* ── 订单卡片 ── */
-.order-card {
-  margin-top: 20rpx;
-  background: #ffffff;
-  border-radius: 20rpx;
-  padding: 0;
-  overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+.order {
+  margin-top: 8rpx;
+  padding: 8rpx 0 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
-.card-header {
+.order-head {
   display: flex;
   align-items: center;
-  padding: 22rpx 28rpx;
-  border-bottom: 1rpx solid #f0f0f0;
   gap: 12rpx;
+  padding: 18rpx 0;
 }
 
-.type-tag {
-  padding: 4rpx 14rpx;
-  border-radius: 6rpx;
-  background: #159d8a;
-  color: #fff;
+.order-tag {
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  background: #fff8e6;
+  color: #f5b800;
   font-size: 20rpx;
   font-weight: 700;
   flex-shrink: 0;
@@ -411,48 +372,47 @@ onShow(async () => {
 
 .order-time {
   flex: 1;
-  font-size: 22rpx;
-  color: #999;
   min-width: 0;
+  font-size: 22rpx;
+  color: #9ca3af;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.status-badge {
+.order-status {
   font-size: 24rpx;
   font-weight: 700;
   flex-shrink: 0;
 }
 
-/* ── 商品行 ── */
-.product-row {
+.product {
   display: flex;
-  padding: 24rpx 28rpx;
-  gap: 20rpx;
   align-items: center;
+  gap: 18rpx;
+  padding: 12rpx 0;
 }
 
 .product-img {
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 14rpx;
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 16rpx;
+  background: #f3f4f6;
   flex-shrink: 0;
-  background: #f8f8f8;
 }
 
 .product-info {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 10rpx;
-  min-width: 0;
 }
 
 .product-name {
   font-size: 28rpx;
   font-weight: 700;
-  color: #1e1e1e;
+  color: #111827;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -461,10 +421,10 @@ onShow(async () => {
 
 .product-sub {
   font-size: 22rpx;
-  color: #999;
+  color: #9ca3af;
 }
 
-.product-price-col {
+.product-side {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -474,66 +434,62 @@ onShow(async () => {
 
 .product-price {
   font-size: 26rpx;
-  color: #333;
-  font-weight: 600;
+  font-weight: 700;
+  color: #111827;
 }
 
 .product-qty {
   font-size: 22rpx;
-  color: #999;
+  color: #9ca3af;
 }
 
-/* ── 费用汇总 ── */
-.cost-row {
+.cost {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 24rpx;
-  padding: 16rpx 28rpx;
-  border-top: 1rpx dashed #eee;
+  gap: 20rpx;
+  padding: 12rpx 0;
 }
 
-.cost-label {
+.cost-deposit {
   font-size: 22rpx;
-  color: #999;
+  color: #9ca3af;
 }
 
 .cost-total {
   font-size: 24rpx;
-  color: #666;
+  color: #6b7280;
 }
 
 .cost-amount {
   font-size: 32rpx;
   font-weight: 800;
-  color: #e6a23c;
+  color: #f5b800;
 }
 
-/* ── 操作按钮 ── */
-.action-row {
+.actions {
   display: flex;
   justify-content: flex-end;
-  gap: 16rpx;
-  padding: 20rpx 28rpx;
-  border-top: 1rpx solid #f0f0f0;
+  gap: 14rpx;
+  padding: 8rpx 0 4rpx;
 }
 
-.action-btn {
+.btn {
   padding: 12rpx 28rpx;
   border-radius: 999rpx;
   font-size: 24rpx;
   font-weight: 600;
 }
 
-.action-btn.outline {
-  border: 2rpx solid #ddd;
-  color: #666;
-  background: #fff;
+.btn.ghost {
+  border: 2rpx solid #e5e7eb;
+  color: #6b7280;
+  background: #ffffff;
 }
 
-.action-btn.primary {
-  border: 2rpx solid #159d8a;
-  background: #159d8a;
-  color: #fff;
+.btn.primary {
+  border: 2rpx solid #f5b800;
+  background: #f5b800;
+  color: #ffffff;
 }
 </style>

@@ -5,6 +5,7 @@ export type PaymentMode = "mock" | "wechat";
 export type PaymentStatus = "pending" | "paid" | "failed" | "cancelled";
 export type OrderAcceptStatus = "pending" | "confirmed" | "rejected";
 export type DeliveryStatus = "pending" | "delivering" | "delivered" | "returned";
+export type DepositRefundStatus = "none" | "pending" | "refunded";
 
 export interface AdminUser {
   id: string;
@@ -122,6 +123,7 @@ export interface Order {
   paymentStatus: PaymentStatus;
   acceptStatus: OrderAcceptStatus;
   deliveryStatus: DeliveryStatus;
+  depositRefundStatus?: DepositRefundStatus;
   couponCode?: string;
   items: OrderItemSnapshot[];
   createdAt: string;

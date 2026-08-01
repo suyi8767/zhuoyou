@@ -4,8 +4,8 @@ import { useSessionStore } from "../../stores/session";
 
 const sessionStore = useSessionStore();
 const form = reactive({
-  username: "admin",
-  password: "admin123",
+  username: "jiangdongyunxia",
+  password: "jiangdongyunxia620",
 });
 
 async function submit() {

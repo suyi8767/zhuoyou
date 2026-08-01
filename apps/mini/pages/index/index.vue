@@ -6,7 +6,6 @@ import { useSessionStore } from "../../stores/session";
 
 const sessionStore = useSessionStore();
 const statusBarHeight = ref(20);
-const activeTab = ref("party");
 const home = ref<any>({
   banners: [],
   categories: [],
@@ -14,168 +13,107 @@ const home = ref<any>({
   homeConfig: {},
 });
 const allGames = ref<any[]>([]);
-const coupons = ref<any[]>([]);
 
-const defaultShortcuts = [
-  { id: "party", name: "聚会欢乐", iconText: "聚" },
-  { id: "strategy", name: "策略烧脑", iconText: "策" },
-  { id: "couple", name: "双人约局", iconText: "双" },
-  { id: "fresh", name: "新手友好", iconText: "新" },
-  { id: "campus", name: "校园热门", iconText: "热" },
-];
-const serviceHighlights = [
-  { id: "credit", title: "信用免押", badge: "免" },
-  { id: "after-sale", title: "售后无忧", badge: "护" },
-  { id: "delivery", title: "极速快送", badge: "达" },
-  { id: "campus", title: "校园可达", badge: "校" },
-];
-const goodStuffTabs = [
-  { key: "good", label: "好物严选", subtitle: "桌游优选" },
-  { key: "camera", label: "聚会热门", subtitle: "宿舍社团" },
-  { key: "card", label: "双人约局", subtitle: "情侣轻松" },
-  { key: "micro", label: "策略烧脑", subtitle: "进阶玩家" },
+const quickLinks = [
+  { id: "party", name: "聚会必玩", keyword: "聚会" },
+  { id: "fresh", name: "新手友好", keyword: "新手" },
+  { id: "hot", name: "热门榜单", keyword: "热门" },
+  { id: "new", name: "近期上新", keyword: "新" },
 ];
 
 const brandTitle = computed(
   () => home.value.homeConfig?.title || "云小夏桌游租赁",
 );
 
+const brandSubtitle = computed(
+  () => home.value.homeConfig?.subtitle || "好玩的桌游，轻松租回家",
+);
+
 const bannerList = computed(() => {
-  const banners = (home.value.banners || []).filter((item: any) => item.enabled !== false);
+  const banners = (home.value.banners || []).filter(
+    (item: any) => item.enabled !== false,
+  );
   if (banners.length) {
     return banners;
   }
   return [
     {
       id: "default-banner",
-      title: brandTitle.value,
-      subtitle: "大学城桌游上门，青春聚会轻松开场",
+      title: "热卖新手友好局",
+      subtitle: "从卡坦岛到璀璨宝石，轻松上手",
       image: "/static/banner-default.png",
     },
   ];
 });
 
-const shortcutCategories = computed(() => {
-  const categories = home.value.categories || [];
-  if (categories.length) {
-    return categories.slice(0, 5).map((item: any, index: number) => ({
-      id: item.id,
-      name: item.name,
-      iconText: defaultShortcuts[index]?.iconText || item.name?.slice(0, 1) || "桌",
-      categoryId: item.id,
-    }));
-  }
-  return defaultShortcuts.map((item) => ({ ...item, categoryId: "" }));
+const popularGames = computed(() => {
+  const featured = home.value.featuredGames || [];
+  const source = featured.length ? featured : allGames.value;
+  return source.slice(0, 4);
 });
 
-const featuredGames = computed(() => home.value.featuredGames || []);
+const newGames = computed(() => allGames.value.slice(0, 6));
 
-const rankingTabs = [
-  { key: "party", label: "聚会热门" },
-  { key: "strategy", label: "策略烧脑" },
-  { key: "fresh", label: "新手友好" },
-  { key: "campus", label: "校园拼局" },
-];
+function rankClass(index: number) {
+  if (index === 0) return "gold";
+  if (index === 1) return "silver";
+  if (index === 2) return "bronze";
+  return "normal";
+}
 
-const rankingGames = computed(() => {
-  const sourceGames = allGames.value.length ? allGames.value : featuredGames.value;
-  const games = [...sourceGames];
-  if (activeTab.value === "strategy") {
-    return games.filter(
-      (game: any) =>
-        (game.tags || []).some((tag: string) => tag.includes("策略")) ||
-        String(game.players || "").includes("3") ||
-        String(game.players || "").includes("5"),
-    );
+function categoryName(categoryId?: string) {
+  const hit = (home.value.categories || []).find(
+    (item: any) => item.id === categoryId,
+  );
+  return hit?.name || "桌游";
+}
+
+function gameTags(game: any) {
+  const tags: string[] = [];
+  const cat = categoryName(game.categoryId);
+  if (cat) tags.push(cat);
+  if (game.players) tags.push(String(game.players).replace("人", "") + "人");
+  for (const tag of game.tags || []) {
+    if (tags.length >= 3) break;
+    if (!tags.includes(tag)) tags.push(tag);
   }
-  if (activeTab.value === "fresh") {
-    return games.filter((game: any) =>
-      (game.tags || []).some((tag: string) => tag.includes("新手")),
-    );
-  }
-  if (activeTab.value === "campus") {
-    return games.filter((game: any) =>
-      (game.tags || []).some(
-        (tag: string) => tag.includes("聚会") || tag.includes("社团"),
-      ),
-    );
-  }
-  return games;
-});
-
-const featuredProducts = computed(() =>
-  allGames.value.slice(0, 4).map((item: any, index: number) => ({
-    id: item.id,
-    name: item.name,
-    price: `¥${item.dailyPrice}/天`,
-    image: item.coverImage,
-    tag: coupons.value[index]?.name || (item.tags || [])[0] || "推荐",
-  })),
-);
-
-const latestDrops = computed(() =>
-  allGames.value.slice(0, 4).map((item: any) => ({
-    id: item.id,
-    name: item.name,
-    image: item.coverImage,
-  })),
-);
-
-const goodStuffProducts = computed(() =>
-  allGames.value.map((item: any) => ({
-    id: item.id,
-    name: item.name,
-    price: `¥${item.dailyPrice}/天`,
-    note: "1天起租",
-    image: item.coverImage,
-  })),
-);
-
-const collageCards = computed(() => {
-  const games = featuredGames.value.length ? featuredGames.value : allGames.value;
-  return [
-    {
-      id: "collage-main",
-      title: games[0]?.name || "热门桌游推荐",
-      subtitle: games[0]?.description || "后台有内容时优先展示真实桌游数据",
-      image: games[0]?.coverImage || "/static/banner-default.png",
-      gameId: games[0]?.id,
-    },
-    {
-      id: "collage-side-1",
-      title: games[1]?.name || "聚会热门",
-      subtitle: games[1]?.players || "立即租组局",
-      image: games[1]?.coverImage || "/static/banner-default.png",
-      gameId: games[1]?.id,
-    },
-    {
-      id: "collage-side-2",
-      title: games[2]?.name || "策略烧脑",
-      subtitle: games[2]?.players || "立即租组局",
-      image: games[2]?.coverImage || "/static/banner-default.png",
-      gameId: games[2]?.id,
-    },
-  ];
-});
+  return tags.slice(0, 3);
+}
 
 async function loadHome() {
-  await sessionStore.ensureUserSession();
-  const [homeData, gamesData, couponsData] = await Promise.all([
-    request<any>("/app/home"),
-    request<any[]>("/app/games"),
-    request<any[]>("/app/coupons"),
-  ]);
-  home.value = homeData;
-  allGames.value = gamesData || [];
-  coupons.value = couponsData || [];
+  // 先拉首页数据，登录单独进行，避免登录失败导致整页空白
+  try {
+    const [homeData, gamesData] = await Promise.all([
+      request<any>("/app/home"),
+      request<any[]>("/app/games"),
+    ]);
+    if (homeData) home.value = homeData;
+    allGames.value = gamesData || [];
+    if (!allGames.value.length) {
+      uni.showToast({ title: "暂无桌游数据", icon: "none" });
+    }
+  } catch (error: any) {
+    uni.showToast({
+      title: error?.message || "首页加载失败",
+      icon: "none",
+      duration: 3000,
+    });
+  }
+  try {
+    await sessionStore.ensureUserSession();
+  } catch {
+    // ignore
+  }
 }
 
 function getStatusBarHeight() {
   try {
     const info = uni.getSystemInfoSync();
-    statusBarHeight.value = info.statusBarHeight || 20;
+    // custom 导航：状态栏 + 胶囊区域，避免标题/Banner 被顶栏挡住
+    const status = info.statusBarHeight || 20;
+    statusBarHeight.value = status + 12;
   } catch {
-    statusBarHeight.value = 20;
+    statusBarHeight.value = 32;
   }
 }
 
@@ -196,6 +134,17 @@ function goDetail(id?: string) {
   uni.navigateTo({
     url: `/pages/game-detail/index?id=${id}`,
   });
+}
+
+function handleQuickLink(link: (typeof quickLinks)[number]) {
+  if (link.id === "hot" || link.id === "new") {
+    goGames();
+    return;
+  }
+  const match = (home.value.categories || []).find((item: any) =>
+    String(item.name || "").includes(link.keyword),
+  );
+  goGames(match?.id);
 }
 
 function goAdminEntry() {
@@ -219,203 +168,136 @@ onPullDownRefresh(async () => {
 
 <template>
   <view class="home-page">
-    <view class="top-section" :style="{ paddingTop: statusBarHeight + 'px' }" @longpress="goAdminEntry">
-      <view class="page-header">
-        <text class="page-title">{{ brandTitle }}</text>
-        <view class="title-decoration"></view>
+    <view
+      class="page-pad"
+      :style="{ paddingTop: statusBarHeight + 'px' }"
+      @longpress="goAdminEntry"
+    >
+      <view class="brand">
+        <text class="brand-title">{{ brandTitle }}</text>
+        <text class="brand-subtitle">{{ brandSubtitle }}</text>
       </view>
-    </view>
 
-    <view class="navbar-placeholder"></view>
-
-    <view class="page-shell">
-      <view class="banner-window" @longpress="goAdminEntry">
-        <swiper
-          autoplay
-          circular
-          class="hero-swiper"
-          indicator-dots
-          indicator-active-color="#ffffff"
-        >
-          <swiper-item v-for="banner in bannerList" :key="banner.id">
-            <view class="banner-card">
-              <image :src="banner.image" class="banner-image" mode="aspectFill" />
-              <view class="banner-mask">
-                <view class="banner-copy">
-                  <text class="banner-title">{{ banner.title }}</text>
-                  <text class="banner-subtitle">{{ banner.subtitle }}</text>
-                </view>
-                <button class="banner-button" @click.stop="goGames()">立即租组局</button>
-              </view>
+      <swiper
+        class="banner"
+        autoplay
+        circular
+        indicator-dots
+        indicator-color="rgba(255,255,255,0.5)"
+        indicator-active-color="#3B82F6"
+      >
+        <swiper-item v-for="banner in bannerList" :key="banner.id">
+          <view class="banner-item" @click="goGames()">
+            <image :src="banner.image" class="banner-img" mode="aspectFill" />
+            <view class="banner-mask">
+              <text class="banner-title">{{ banner.title }}</text>
+              <text class="banner-sub">{{ banner.subtitle }}</text>
             </view>
-          </swiper-item>
-        </swiper>
-      </view>
-
-      <view class="search-bar" @click="goGames()">
-        <text class="search-icon">⌕</text>
-        <text class="search-placeholder">搜索桌游 / 聚会主题 / 人数玩法</text>
-      </view>
-
-      <scroll-view scroll-x class="category-scroll" show-scrollbar="false">
-        <view class="category-row">
-          <view
-            v-for="category in shortcutCategories"
-            :key="category.id"
-            class="category-pill"
-            @click="goGames(category.categoryId || undefined)"
-          >
-            <view class="category-icon">{{ category.iconText }}</view>
-            <text class="category-label">{{ category.name }}</text>
           </view>
-        </view>
-      </scroll-view>
+        </swiper-item>
+      </swiper>
 
-      <view class="ranking-section">
-        <view class="ranking-header">
-          <text class="ranking-title">热租榜单</text>
-          <scroll-view scroll-x class="ranking-tabs" show-scrollbar="false">
-            <view class="tab-row">
-              <view
-                v-for="tab in rankingTabs"
-                :key="tab.key"
-                :class="['ranking-tab', { active: activeTab === tab.key }]"
-                @click="activeTab = tab.key"
-              >
-                {{ tab.label }}
-              </view>
+      <view class="search" @click="goGames()">
+        <text class="search-icon">⌕</text>
+        <text class="search-text">搜索桌游 / 聚会主题 / 人数玩法</text>
+        <text class="search-action">搜索</text>
+      </view>
+
+      <view class="quick">
+        <view
+          v-for="link in quickLinks"
+          :key="link.id"
+          class="quick-item"
+          @click="handleQuickLink(link)"
+        >
+          <view v-if="link.id === 'party'" class="ico ico-stack">
+            <view class="stack s1"></view>
+            <view class="stack s2"></view>
+            <view class="stack s3"></view>
+          </view>
+          <view v-else-if="link.id === 'fresh'" class="ico ico-people">
+            <view class="head h1"></view>
+            <view class="body b1"></view>
+            <view class="head h2"></view>
+            <view class="body b2"></view>
+          </view>
+          <view v-else-if="link.id === 'hot'" class="ico ico-crown">
+            <view class="crown"></view>
+          </view>
+          <view v-else class="ico ico-cal">
+            <view class="cal-top"></view>
+            <view class="cal-body">
+              <view class="cal-check"></view>
             </view>
-          </scroll-view>
+          </view>
+          <text class="quick-label">{{ link.name }}</text>
         </view>
+      </view>
 
-        <scroll-view scroll-x class="goods-scroll" show-scrollbar="false">
-          <view class="goods-row">
+      <view class="block">
+        <view class="block-head">
+          <text class="block-title">热门榜单</text>
+          <text class="block-more" @click="goGames()">查看全部 ›</text>
+        </view>
+        <scroll-view scroll-x class="hot-scroll" show-scrollbar="false">
+          <view class="hot-row">
             <view
-              v-for="game in rankingGames"
+              v-for="(game, index) in popularGames"
               :key="game.id"
-              class="goods-card"
+              class="hot-item"
               @click="goDetail(game.id)"
             >
-              <image :src="game.coverImage" class="goods-image" mode="aspectFit" />
-              <view class="goods-body">
-                <text class="goods-name">{{ game.name }}</text>
-                <text class="goods-subtitle">{{ game.players }}</text>
-                <text class="goods-price">¥{{ game.dailyPrice }}/天</text>
+              <view class="hot-cover-box">
+                <image
+                  :src="game.coverImage"
+                  class="hot-cover"
+                  mode="aspectFill"
+                />
+                <view :class="['hot-rank', rankClass(index)]">
+                  <text class="hot-rank-num">{{ index + 1 }}</text>
+                </view>
               </view>
+              <text class="hot-name">{{ game.name }}</text>
+              <text class="hot-meta">
+                {{ game.players || "多人" }} | {{ categoryName(game.categoryId) }}
+              </text>
+              <text class="hot-price">¥{{ game.dailyPrice }}/天</text>
             </view>
           </view>
         </scroll-view>
       </view>
 
-      <view class="collage-section">
-        <view class="collage-grid">
-          <view
-            class="collage-main"
-            :style="{ backgroundImage: `url(${collageCards[0]?.image})` }"
-            @click="goDetail(collageCards[0]?.gameId)"
-          >
-            <view class="collage-overlay"></view>
-            <view class="collage-copy">
-              <text class="collage-title">{{ collageCards[0]?.title }}</text>
-              <text class="collage-subtitle">{{ collageCards[0]?.subtitle }}</text>
-              <text class="collage-button">立即租组局</text>
+      <view class="block">
+        <view class="block-head">
+          <text class="block-title">新上架推荐</text>
+          <text class="block-more" @click="goGames()">查看全部 ›</text>
+        </view>
+
+        <view v-if="!newGames.length" class="empty">暂无桌游</view>
+
+        <view
+          v-for="game in newGames"
+          :key="game.id"
+          class="rec-item"
+          @click="goDetail(game.id)"
+        >
+          <image :src="game.coverImage" class="rec-cover" mode="aspectFill" />
+          <view class="rec-main">
+            <text class="rec-name">{{ game.name }}</text>
+            <view class="rec-tags">
+              <text v-for="tag in gameTags(game)" :key="tag" class="rec-tag">
+                {{ tag }}
+              </text>
             </view>
+            <text class="rec-desc">
+              {{ game.description || "适合聚会开局，轻松上手。" }}
+            </text>
           </view>
-
-          <view class="collage-side">
-            <view
-              v-for="card in collageCards.slice(1)"
-              :key="card.id"
-              class="collage-small"
-              :style="{ backgroundImage: `url(${card.image})` }"
-              @click="goDetail(card.gameId)"
-            >
-              <view class="collage-overlay light"></view>
-              <view class="collage-copy small">
-                <text class="collage-small-title">{{ card.title }}</text>
-                <text class="collage-button small">立即租组局</text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <view class="highlight-strip">
-        <view v-for="item in serviceHighlights" :key="item.id" class="highlight-item">
-          <view class="highlight-badge">{{ item.badge }}</view>
-          <text class="highlight-text">{{ item.title }}</text>
-        </view>
-      </view>
-
-      <view class="content-section">
-        <view class="content-section-header">
-          <text class="content-section-title">特色产品</text>
-          <text class="content-section-subtitle">聚会优选 · 经济实惠</text>
-        </view>
-        <scroll-view scroll-x class="mini-scroll" show-scrollbar="false">
-          <view class="mini-row">
-            <view
-              v-for="item in featuredProducts"
-              :key="item.id"
-              class="mini-product-card"
-              @click="goGames()"
-            >
-              <view class="mini-product-tag">{{ item.tag }}</view>
-              <image :src="item.image" class="mini-product-image" mode="aspectFit" />
-              <text class="mini-product-name">{{ item.name }}</text>
-              <text class="mini-product-price">{{ item.price }}</text>
-            </view>
-          </view>
-        </scroll-view>
-      </view>
-
-      <view class="content-section">
-        <view class="content-section-header">
-          <text class="content-section-title">新品动态</text>
-          <text class="content-section-subtitle">天天有新货 · 口碑有好局</text>
-        </view>
-        <scroll-view scroll-x class="mini-scroll" show-scrollbar="false">
-          <view class="latest-row">
-            <view
-              v-for="item in latestDrops"
-              :key="item.id"
-              class="latest-card"
-              @click="goGames()"
-            >
-              <image :src="item.image" class="latest-image" mode="aspectFit" />
-              <text class="latest-name">{{ item.name }}</text>
-            </view>
-          </view>
-        </scroll-view>
-      </view>
-
-      <view class="content-section">
-        <view class="content-section-header stacked">
-          <text class="content-section-title">好物严选</text>
-          <scroll-view scroll-x class="good-tabs-scroll" show-scrollbar="false">
-            <view class="good-tabs-row">
-              <view v-for="tab in goodStuffTabs" :key="tab.key" class="good-tab">
-                <text class="good-tab-title">{{ tab.label }}</text>
-                <text class="good-tab-subtitle">{{ tab.subtitle }}</text>
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-
-        <view class="masonry-grid">
-          <view
-            v-for="item in goodStuffProducts"
-            :key="item.id"
-            class="masonry-card"
-            @click="goGames()"
-          >
-            <image :src="item.image" class="masonry-image" mode="aspectFit" />
-            <view class="masonry-body">
-              <text class="masonry-name">{{ item.name }}</text>
-              <view class="masonry-footer">
-                <text class="masonry-price">{{ item.price }}</text>
-                <text class="masonry-note">{{ item.note }}</text>
-              </view>
+          <view class="rec-side">
+            <text class="rec-price">¥{{ game.dailyPrice }}/天</text>
+            <view class="rec-plus">
+              <view class="rec-plus-h"></view>
+              <view class="rec-plus-v"></view>
             </view>
           </view>
         </view>
@@ -428,7 +310,6 @@ onPullDownRefresh(async () => {
 view,
 text,
 image,
-button,
 scroll-view {
   box-sizing: border-box;
 }
@@ -436,713 +317,476 @@ scroll-view {
 .home-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(74, 144, 226, 0.18), transparent 28%),
-    radial-gradient(circle at top right, rgba(38, 166, 154, 0.24), transparent 26%),
-    linear-gradient(180deg, #edf8f7 0%, #f8fbff 52%, #f3f7fb 100%);
+    linear-gradient(180deg, #dbeafe 0%, #eff6ff 28%, #f8fbff 52%, #ffffff 78%);
+  padding-bottom: 48rpx;
 }
 
-.top-section {
-  background:
-    radial-gradient(circle at right top, rgba(255, 255, 255, 0.18), transparent 22%),
-    linear-gradient(to top right, #4a90e2 0%, #4a90e2 56%, #26a69a 100%);
-  padding: calc(var(--status-bar-height) + 40rpx) 40rpx 120rpx;
-  border-radius: 0 0 40rpx 40rpx;
-  box-shadow: 0 16rpx 40rpx rgba(38, 166, 154, 0.18);
+.page-pad {
+  padding: 8rpx 32rpx 0;
 }
 
-.page-header {
-  margin-bottom: 40rpx;
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-}
-
-.page-title {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #ffffff;
-  display: inline-block;
-  position: relative;
-  z-index: 2;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.title-decoration {
-  position: absolute;
-  left: 24rpx;
-  right: -24rpx;
-  bottom: -1rpx;
-  height: 27rpx;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 8rpx;
-  z-index: 1;
-}
-
-.navbar-placeholder {
-  height: 18rpx;
-  flex-shrink: 0;
-}
-
-.page-shell {
-  padding: 8rpx 24rpx 36rpx;
-  position: relative;
-  z-index: 40;
-}
-
-.banner-window {
-  margin-top: -118rpx;
-  border-radius: 28rpx;
-  overflow: hidden;
-  border: 2rpx solid rgba(255, 255, 255, 0.72);
-  box-shadow: 0 18rpx 38rpx rgba(53, 109, 126, 0.16);
-}
-
-.hero-swiper {
-  height: 202rpx;
-}
-
-.search-bar {
-  margin-top: 20rpx;
-  height: 82rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 255, 0.96));
-  border: 2rpx solid rgba(117, 180, 204, 0.14);
-  box-shadow: 0 12rpx 28rpx rgba(76, 112, 132, 0.08);
+.brand {
   display: flex;
-  align-items: center;
-  padding: 0 24rpx;
-  gap: 14rpx;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 6rpx;
+  margin-bottom: 20rpx;
 }
 
-.search-icon {
-  color: #5d8e99;
-  font-size: 30rpx;
-  line-height: 1;
+.brand-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
 }
 
-.search-placeholder {
-  color: #86a1a8;
+.brand-subtitle {
   font-size: 24rpx;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #9ca3af;
 }
 
-.banner-card {
+.banner {
+  height: 280rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.banner-item {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.banner-image {
+.banner-img {
   width: 100%;
   height: 100%;
 }
 
 .banner-mask {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 24rpx 24rpx;
-  background: linear-gradient(180deg, rgba(13, 34, 40, 0.08), rgba(11, 33, 39, 0.56));
-}
-
-.banner-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  width: 68%;
-  min-width: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28rpx 24rpx 32rpx;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
 }
 
 .banner-title {
+  display: block;
   color: #fff;
-  font-size: 32rpx;
-  font-weight: 800;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.banner-sub {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 22rpx;
+}
+
+.search {
+  margin-top: 24rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  gap: 12rpx;
+}
+
+.search-icon {
+  color: #9ca3af;
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.search-text {
+  flex: 1;
+  min-width: 0;
+  color: #9ca3af;
+  font-size: 24rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.banner-subtitle {
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 20rpx;
-  line-height: 1.5;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.search-action {
+  color: #3b82f6;
+  font-size: 26rpx;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
-.banner-button {
-  margin: 0;
-  width: 164rpx;
-  height: 60rpx;
-  line-height: 60rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1c7f92;
-  font-size: 22rpx;
-  font-weight: 700;
+.quick {
+  margin-top: 36rpx;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8rpx;
 }
 
-.category-scroll {
-  margin-top: 30rpx;
-  white-space: nowrap;
-  background: rgba(255, 255, 255, 0.66);
-  border-radius: 28rpx;
-  padding: 20rpx 8rpx 16rpx;
-  box-shadow: 0 12rpx 28rpx rgba(90, 137, 172, 0.08);
-}
-
-.category-row {
-  display: inline-flex;
-  gap: 24rpx;
-  padding: 0 10rpx;
-}
-
-.category-pill {
-  width: 118rpx;
+.quick-item {
+  width: 25%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14rpx;
-  min-width: 0;
 }
 
-.category-icon {
-  width: 98rpx;
-  height: 98rpx;
-  border-radius: 49rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 42%),
-    linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
-  color: #3f8fdc;
-  font-size: 34rpx;
-  font-weight: 700;
-  box-shadow: 0 12rpx 26rpx rgba(90, 137, 172, 0.14);
-  border: 2rpx solid rgba(255, 255, 255, 0.8);
+.quick-label {
+  font-size: 22rpx;
+  color: #374151;
 }
 
-.category-label {
-  font-size: 24rpx;
-  color: #2b2f32;
-  text-align: center;
-  line-height: 1.3;
-  width: 100%;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.ranking-section {
-  margin-top: 30rpx;
-  background: rgba(255, 255, 255, 0.88);
-  border-radius: 30rpx;
-  padding: 24rpx 20rpx 22rpx;
-  box-shadow: 0 14rpx 32rpx rgba(87, 112, 128, 0.09);
-}
-
-.ranking-header {
-  display: flex;
-  align-items: center;
-  gap: 18rpx;
-  min-width: 0;
-}
-
-.ranking-title {
-  font-size: 42rpx;
-  font-weight: 800;
-  color: #2b2f32;
-  flex-shrink: 0;
-  letter-spacing: -0.5rpx;
-}
-
-.ranking-tabs {
-  flex: 1;
-  white-space: nowrap;
-  background: rgba(245, 247, 250, 0.95);
-  border-radius: 999rpx;
-  padding: 12rpx 16rpx 10rpx;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.tab-row {
-  display: inline-flex;
-  gap: 26rpx;
-}
-
-.ranking-tab {
+.ico {
+  width: 56rpx;
+  height: 56rpx;
   position: relative;
-  font-size: 26rpx;
-  color: #7a7f86;
-  padding-bottom: 10rpx;
 }
 
-.ranking-tab.active {
-  color: #2b2f32;
-  font-weight: 700;
-}
-
-.ranking-tab.active::after {
-  content: "";
+.ico-stack .stack {
   position: absolute;
   left: 8rpx;
   right: 8rpx;
-  bottom: 0;
-  height: 4rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(90deg, #ff648c, #ff2d55);
+  height: 10rpx;
+  border: 3rpx solid #111827;
+  border-radius: 4rpx;
+  background: transparent;
 }
 
-.goods-scroll {
-  margin-top: 24rpx;
-  white-space: nowrap;
+.ico-stack .s1 {
+  top: 10rpx;
+}
+.ico-stack .s2 {
+  top: 22rpx;
+}
+.ico-stack .s3 {
+  top: 34rpx;
 }
 
-.goods-row {
-  display: inline-flex;
-  gap: 14rpx;
-  padding-bottom: 8rpx;
-}
-
-.goods-card {
-  width: 184rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border-radius: 20rpx;
-  overflow: hidden;
-  border: 2rpx solid rgba(235, 242, 248, 0.92);
-  box-shadow: 0 12rpx 28rpx rgba(80, 113, 132, 0.09);
-  min-width: 0;
-}
-
-.goods-image {
-  width: 100%;
-  height: 164rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
-}
-
-.goods-body {
-  padding: 14rpx 14rpx 18rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-}
-
-.goods-name {
-  font-size: 22rpx;
-  color: #2c3136;
-  line-height: 1.35;
-  min-height: 64rpx;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  word-break: break-all;
-  white-space: normal;
-}
-
-.goods-subtitle {
-  font-size: 20rpx;
-  color: #8a8f96;
-}
-
-.goods-price {
-  font-size: 28rpx;
-  color: #ff2d55;
-  font-weight: 800;
-}
-
-.collage-section {
-  margin-top: 26rpx;
-  background: rgba(255, 255, 255, 0.88);
-  border-radius: 30rpx;
-  padding: 18rpx;
-  box-shadow: 0 14rpx 30rpx rgba(87, 112, 128, 0.08);
-}
-
-.collage-grid {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 14rpx;
-}
-
-.collage-main,
-.collage-small {
-  position: relative;
-  overflow: hidden;
-  background-size: cover;
-  background-position: center;
-  border-radius: 22rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.75);
-}
-
-.collage-main {
-  min-height: 320rpx;
-}
-
-.collage-side {
-  display: grid;
-  grid-template-rows: repeat(2, 1fr);
-  gap: 14rpx;
-}
-
-.collage-small {
-  min-height: 153rpx;
-}
-
-.collage-overlay {
+.ico-people .head {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(15, 36, 47, 0.48));
+  width: 14rpx;
+  height: 14rpx;
+  border: 3rpx solid #111827;
+  border-radius: 50%;
+  background: transparent;
 }
-
-.collage-overlay.light {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(18, 30, 45, 0.36));
+.ico-people .h1 {
+  left: 8rpx;
+  top: 8rpx;
 }
-
-.collage-copy {
+.ico-people .h2 {
+  right: 8rpx;
+  top: 12rpx;
+  width: 12rpx;
+  height: 12rpx;
+}
+.ico-people .body {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  padding: 24rpx 22rpx;
+  border: 3rpx solid #111827;
+  border-bottom: 0;
+  border-radius: 14rpx 14rpx 0 0;
+  background: transparent;
+}
+.ico-people .b1 {
+  left: 4rpx;
+  bottom: 6rpx;
+  width: 24rpx;
+  height: 16rpx;
+}
+.ico-people .b2 {
+  right: 4rpx;
+  bottom: 6rpx;
+  width: 20rpx;
+  height: 14rpx;
+}
+
+.ico-crown .crown {
+  position: absolute;
+  left: 6rpx;
+  right: 6rpx;
+  top: 14rpx;
+  height: 28rpx;
+  border: 3rpx solid #111827;
+  border-top: 0;
+  border-radius: 0 0 8rpx 8rpx;
+  background: transparent;
+}
+.ico-crown .crown::before,
+.ico-crown .crown::after {
+  content: "";
+  position: absolute;
+  top: -12rpx;
+  width: 10rpx;
+  height: 16rpx;
+  border: 3rpx solid #111827;
+  border-bottom: 0;
+  border-radius: 8rpx 8rpx 0 0;
+}
+.ico-crown .crown::before {
+  left: 4rpx;
+}
+.ico-crown .crown::after {
+  right: 4rpx;
+}
+
+.ico-cal .cal-top {
+  position: absolute;
+  left: 8rpx;
+  right: 8rpx;
+  top: 10rpx;
+  height: 10rpx;
+  background: #111827;
+  border-radius: 4rpx 4rpx 0 0;
+}
+.ico-cal .cal-body {
+  position: absolute;
+  left: 8rpx;
+  right: 8rpx;
+  top: 20rpx;
+  bottom: 8rpx;
+  border: 3rpx solid #111827;
+  border-top: 0;
+  border-radius: 0 0 6rpx 6rpx;
+}
+.ico-cal .cal-check {
+  position: absolute;
+  left: 10rpx;
+  top: 8rpx;
+  width: 12rpx;
+  height: 8rpx;
+  border-left: 3rpx solid #111827;
+  border-bottom: 3rpx solid #111827;
+  transform: rotate(-45deg);
+}
+
+.block {
+  margin-top: 40rpx;
+}
+
+.block-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
-  min-width: 0;
-  overflow: hidden;
+  margin-bottom: 20rpx;
 }
 
-.collage-copy.small {
-  justify-content: flex-end;
-  gap: 12rpx;
+.block-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #111827;
 }
 
-.collage-title {
-  font-size: 46rpx;
-  color: #ffffff;
-  font-weight: 800;
-  line-height: 1.08;
-  text-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.block-more {
+  font-size: 24rpx;
+  color: #9ca3af;
 }
 
-.collage-subtitle {
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.92);
-  overflow: hidden;
-  text-overflow: ellipsis;
+.hot-scroll {
   white-space: nowrap;
 }
 
-.collage-small-title {
-  font-size: 28rpx;
-  color: #ffffff;
-  font-weight: 700;
-  line-height: 1.2;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.hot-row {
+  display: inline-flex;
+  gap: 20rpx;
 }
 
-.collage-button {
-  display: inline-flex;
+.hot-item {
+  width: 168rpx;
+}
+
+.hot-cover-box {
+  position: relative;
+  width: 168rpx;
+  height: 168rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.hot-cover {
+  width: 100%;
+  height: 100%;
+}
+
+.hot-rank {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 40rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  border-radius: 0 0 12rpx 0;
+  background: #9ca3af;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 150rpx;
-  height: 50rpx;
-  border-radius: 999rpx;
-  background: #ff2d55;
+}
+
+.hot-rank.gold {
+  background: #f59e0b;
+}
+.hot-rank.silver {
+  background: #94a3b8;
+}
+.hot-rank.bronze {
+  background: #d97706;
+}
+
+.hot-rank-num {
   color: #fff;
   font-size: 22rpx;
   font-weight: 700;
 }
 
-.collage-button.small {
-  width: 132rpx;
-  height: 44rpx;
-  font-size: 20rpx;
-}
-
-.highlight-strip {
-  margin-top: 18rpx;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10rpx;
-}
-
-.highlight-item {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
-  border-radius: 18rpx;
-  padding: 16rpx 10rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-  box-shadow: 0 10rpx 22rpx rgba(91, 118, 134, 0.08);
-  min-width: 0;
-  overflow: hidden;
-}
-
-.highlight-badge {
-  width: 46rpx;
-  height: 46rpx;
-  border-radius: 23rpx;
-  background: linear-gradient(135deg, #ffcf82, #ff8f5c);
-  color: #ffffff;
-  font-size: 24rpx;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.highlight-text {
-  font-size: 22rpx;
-  color: #45484d;
-  width: 100%;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.content-section {
-  margin-top: 26rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 30rpx;
-  padding: 22rpx 20rpx 24rpx;
-  box-shadow: 0 14rpx 30rpx rgba(87, 112, 128, 0.08);
-}
-
-.content-section-header {
-  display: flex;
-  align-items: baseline;
-  gap: 12rpx;
-  margin-bottom: 18rpx;
-  min-width: 0;
-}
-
-.content-section-header.stacked {
+.hot-name {
   display: block;
-}
-
-.content-section-title {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #24282d;
-  position: relative;
-  padding-left: 16rpx;
-}
-
-.content-section-title::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 8rpx;
-  width: 6rpx;
-  height: 28rpx;
-  border-radius: 999rpx;
-  background: linear-gradient(180deg, #4a90e2, #26a69a);
-}
-
-.content-section-subtitle {
-  font-size: 20rpx;
-  color: #9b9fa6;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mini-scroll,
-.good-tabs-scroll {
-  white-space: nowrap;
-}
-
-.mini-row {
-  display: inline-flex;
-  gap: 14rpx;
-}
-
-.mini-product-card {
-  position: relative;
-  width: 166rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border-radius: 18rpx;
-  padding: 14rpx 12rpx 16rpx;
-  border: 2rpx solid rgba(235, 242, 248, 0.9);
-  box-shadow: 0 8rpx 24rpx rgba(83, 110, 128, 0.08);
-  min-width: 0;
-  overflow: hidden;
-}
-
-.mini-product-tag {
-  position: absolute;
-  top: 10rpx;
-  left: 10rpx;
-  padding: 4rpx 8rpx;
-  border-radius: 8rpx;
-  background: linear-gradient(135deg, #b33cff, #ff4dd8);
-  color: #ffffff;
-  font-size: 18rpx;
-}
-
-.mini-product-image {
-  width: 100%;
-  height: 136rpx;
-}
-
-.mini-product-name {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  line-height: 1.35;
-  color: #2c3136;
-  min-height: 62rpx;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.mini-product-price {
-  margin-top: 8rpx;
-  font-size: 30rpx;
-  color: #ff2d55;
-  font-weight: 800;
-}
-
-.latest-row {
-  display: inline-flex;
-  gap: 14rpx;
-}
-
-.latest-card {
-  width: 128rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border-radius: 16rpx;
-  padding: 12rpx;
-  border: 2rpx solid rgba(236, 242, 248, 0.9);
-  box-shadow: 0 8rpx 20rpx rgba(83, 110, 128, 0.08);
-  min-width: 0;
-  overflow: hidden;
-}
-
-.latest-image {
-  width: 100%;
-  height: 88rpx;
-}
-
-.latest-name {
-  margin-top: 8rpx;
-  font-size: 22rpx;
-  color: #2c3136;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.good-tabs-row {
-  display: inline-flex;
-  gap: 22rpx;
   margin-top: 12rpx;
-  padding-bottom: 4rpx;
-}
-
-.good-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-  min-width: 0;
-  max-width: 160rpx;
-}
-
-.good-tab-title {
-  font-size: 28rpx;
-  color: #34393f;
-  font-weight: 700;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #111827;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.good-tab-subtitle {
+.hot-meta {
+  display: block;
+  margin-top: 6rpx;
   font-size: 20rpx;
-  color: #9b9fa6;
+  color: #9ca3af;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.masonry-grid {
-  margin-top: 18rpx;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+.hot-price {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #3b82f6;
 }
 
-.masonry-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border-radius: 20rpx;
-  overflow: hidden;
-  border: 2rpx solid rgba(235, 242, 248, 0.92);
-  box-shadow: 0 10rpx 22rpx rgba(84, 114, 134, 0.08);
-}
-
-.masonry-image {
-  width: 100%;
-  height: 208rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
-}
-
-.masonry-body {
-  padding: 14rpx 14rpx 18rpx;
-}
-
-.masonry-name {
-  font-size: 24rpx;
-  line-height: 1.4;
-  color: #2c3136;
-  min-height: 94rpx;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-.masonry-footer {
-  margin-top: 10rpx;
+.rec-item {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18rpx;
+  padding: 20rpx 0;
 }
 
-.masonry-price {
+.rec-item + .rec-item {
+  border-top: 1rpx solid #f3f4f6;
+}
+
+.rec-cover {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 16rpx;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.rec-main {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2rpx;
+}
+
+.rec-name {
+  display: block;
   font-size: 30rpx;
-  color: #ff2d55;
-  font-weight: 800;
+  font-weight: 700;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.masonry-note {
-  font-size: 18rpx;
-  color: #9ca1a9;
+.rec-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 10rpx;
+}
+
+.rec-tag {
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 20rpx;
+}
+
+.rec-desc {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #9ca3af;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rec-side {
+  flex-shrink: 0;
+  width: 140rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12rpx;
+  padding-top: 4rpx;
+  align-self: center;
+}
+
+.rec-price {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #3b82f6;
+  white-space: nowrap;
+}
+
+.rec-plus {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  border: 3rpx solid #3b82f6;
+  background: transparent;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rec-plus-h,
+.rec-plus-v {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #3b82f6;
+  border-radius: 2rpx;
+  transform: translate(-50%, -50%);
+}
+
+.rec-plus-h {
+  width: 18rpx;
+  height: 3rpx;
+}
+
+.rec-plus-v {
+  width: 3rpx;
+  height: 18rpx;
+}
+
+.empty {
+  padding: 60rpx 0;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 26rpx;
 }
 </style>
