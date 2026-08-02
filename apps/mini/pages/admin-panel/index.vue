@@ -67,7 +67,13 @@ function acceptColor(status: string) {
 }
 
 function depositAmount(order: any) {
-  return Number(order.payableDeposit ?? order.deposit ?? 0);
+  const deposit =
+    order.payableDeposit != null
+      ? order.payableDeposit
+      : order.deposit != null
+        ? order.deposit
+        : 0;
+  return Number(deposit);
 }
 
 function isDepositRefunded(order: any) {

@@ -84,7 +84,7 @@ function bookNow() {
       <text class="name">{{ game.name }}</text>
       <view class="meta-row">
         <text class="cat-tag">{{ game.categoryName || "桌游" }}</text>
-        <text class="stock">库存 {{ game.stock ?? 0 }} 套</text>
+        <text class="stock">库存 {{ game.stock != null ? game.stock : 0 }} 套</text>
       </view>
     </view>
 
